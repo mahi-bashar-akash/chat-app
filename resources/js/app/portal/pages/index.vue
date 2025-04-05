@@ -46,7 +46,7 @@
         <!-- Users List -->
 
         <template v-for="each in userData">
-          <button type="button" class="w-full flex justify-start items-center bg-transparent duration-500 hover:bg-gray-200 p-3 rounded-lg">
+          <button type="button" class="w-full flex justify-start items-center bg-transparent duration-500 hover:bg-gray-200 p-3 rounded-lg" @click="selectUser(each)">
           <span class="min-w-[50px] min-h-[50px] size-[50px] inline-flex justify-center rounded-full items-center bg-gray-600 text-white">
             {{shortName(each.name)}}
           </span>
@@ -69,126 +69,123 @@
     <div class="min-w-[calc(100%-350px)]">
 
       <!-- Another user chat visible part -->
-      <div class="w-full h-[calc(100vh-175px)]">
+      <template v-if="selectedUserInitials">
+        <div class="w-full h-[calc(100vh-175px)]">
 
-        <!-- Another User info and action part -->
-        <div class="w-full flex justify-between items-center p-3">
+          <!-- Another User info and action part -->
+          <div class="w-full flex justify-between items-center p-3">
 
-          <!-- Another User info part -->
-          <div class="flex justify-start items-center">
-            <div class="min-w-[50px] min-h-[50px] size-[50px] inline-flex justify-center rounded-full items-center bg-gray-600 text-white">
-              AJ
+            <!-- Another User info part -->
+            <div class="flex justify-start items-center">
+              <div class="min-w-[50px] min-h-[50px] size-[50px] inline-flex justify-center rounded-full items-center bg-gray-600 text-white">
+                {{ selectedUserInitials }}
+              </div>
+              <div class="ms-2">
+                <div class="font-bold"> {{ selectedUser.name }} </div>
+                <div class="font-medium text-[13px]"> {{ selectedUser.email }} </div>
+              </div>
             </div>
-            <div class="ms-2">
-              <div class="font-bold"> Ariful Jorder Arif </div>
-              <div class="font-medium text-[13px]"> arifuljorder@gmail.com </div>
+
+            <!-- Another User action part -->
+            <div class="relative" id="otherUserDropdown">
+              <button type="button" class="size-[50px] min-w-[50px] min-h-[50px] rounded-full inline-flex justify-center items-center bg-transparent duration-500 hover:bg-gray-300" @click="openOtherUserDropdown()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-[20px]">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+                </svg>
+              </button>
+              <ul class="absolute top-auto end-0 min-w-[210px] p-2 bg-white drop-shadow-xl border mt-2 rounded-lg z-50" v-if="isOtherUserDropdown" @click.stop>
+                <li>
+                  <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeOtherUserDropdown();chatClear(selectedUser.id)">
+                    Clear Chat
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeOtherUserDropdown();selectedUserInitials = ''">
+                    Exit Chat
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
+          <!-- Chat messages -->
+          <div class="w-full h-[calc(100vh-325px)] bg-gray-200 p-3 scrollbar">
+            <div v-for="message in messages" :key="message.id" :class="{'flex justify-end items-start mb-3': message.sender_id === profileData.id, 'flex justify-start items-start mb-3': message.sender_id !== profileData.id}">
+              <div v-if="message.sender_id !== profileData.id" class="min-w-[50px] min-h-[50px] inline-flex justify-center font-medium items-center bg-white rounded-full me-3 shadow-lg">
+                {{ shortName(selectedUser.name) }}
+              </div>
+              <div v-else class="min-w-[50px] min-h-[50px] inline-flex justify-center font-medium items-center bg-blue-600 text-white rounded-full ms-3 shadow-lg">
+                {{ shortName(profileData?.name) }}
+              </div>
+              <div :class="{'bg-white shadow-lg overflow-hidden rounded-lg': message.sender_id !== profileData.id, 'bg-blue-600 text-white shadow-lg overflow-hidden rounded-lg': message.sender_id === profileData.id}">
+                <div class="w-full px-4 py-2 text-[16px]">
+                  {{ message.content }}
+                </div>
+                <div :class="{'text-[12px] text-end bg-gray-100 px-4 py-2 shadow-inner': message.sender_id !== profileData.id, 'text-[13px] text-end bg-blue-700 text-white px-4 py-2 shadow-inner': message.sender_id === profileData.id}">
+                  {{ formatDateTime(message.created_at) }}
+                </div>
+              </div>
+              <div v-if="message.sender_id !== profileData.id" class="relative ms-3" id="leftChatDropdown">
+                <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openLeftChatDropdown()">
+                  <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
+                  </svg>
+                </button>
+                <ul class="absolute z-20 p-2 rounded-xl top-auto end-0 w-[150px] bg-white drop-shadow-xl" v-if="isLeftChatDropdown" @click.stop>
+                  <li>
+                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeLeftChatDropdown();openChatDeleteModal(message.id)">
+                      Delete
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              <div v-else class="relative ms-3" id="rightChatDropdown">
+                <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openRightChatDropdown()">
+                  <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
+                  </svg>
+                </button>
+                <ul class="absolute z-20 p-2 rounded-xl top-auto start-0 w-[150px] bg-white drop-shadow-xl" v-if="isRightChatDropdown" @click.stop>
+                  <li>
+                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown()">
+                      Edit
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown();openChatDeleteModal(message.id)">
+                      Delete
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          <!-- Another User action part -->
-          <div class="relative" id="otherUserDropdown">
-            <button type="button" class="size-[50px] min-w-[50px] min-h-[50px] rounded-full inline-flex justify-center items-center bg-transparent duration-500 hover:bg-gray-300" @click="openOtherUserDropdown()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-[20px]">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+          <!-- Another User text submit part -->
+          <form @submit.prevent="manageChat()" class="p-3 w-full flex justify-between items-center">
+            <input type="text" name="message" v-model="formData.content" placeholder="Typing Here ..." class="w-full min-h-[50px] px-5 outline-0 bg-gray-200 border-0 block rounded-lg" autocomplete="off" />
+            <button type="submit" class="size-[50px] min-w-[50px] min-h-[50px] w-[50px] h-[50px] outline-0 border-0 bg-gray-200 inline-flex justify-center items-center group rounded-full ms-3">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 duration-500 rotate-0 group-hover:-rotate-45">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
               </svg>
             </button>
-            <ul class="absolute top-auto end-0 min-w-[210px] p-2 bg-white drop-shadow-xl border mt-2 rounded-lg z-50" v-if="isOtherUserDropdown" @click.stop>
-              <li>
-                <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeOtherUserDropdown();chatClear(null)">
-                  Clear Chat
-                </button>
-              </li>
-              <li>
-                <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeOtherUserDropdown()">
-                  Exit Chat
-                </button>
-              </li>
-            </ul>
-          </div>
+          </form>
 
         </div>
+      </template>
 
-        <!-- Another User chat visible part -->
-        <div class="w-full h-[calc(100vh-325px)] bg-gray-200 p-3 scrollbar">
-
-          <div class="flex justify-start items-start mb-3">
-            <div class="min-w-[50px] min-h-[50px] inline-flex justify-center font-medium items-center bg-white rounded-full me-3 shadow-lg">
-              AJ
-            </div>
-            <div class="bg-white shadow-lg overflow-hidden rounded-lg">
-              <div class="w-full px-4 py-2 text-[16px]">
-                Hey Brother, I need help can you please help me.
-              </div>
-              <div class="text-[12px] text-end bg-gray-100 px-4 py-2 shadow-inner"> 12:00 PM </div>
-            </div>
-            <div class="relative ms-3" id="leftChatDropdown">
-              <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openLeftChatDropdown()">
-                <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                  <g id="SVGRepo_iconCarrier">
-                    <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
-                  </g>
-                </svg>
-              </button>
-              <ul class="absolute z-20 p-2 rounded-xl top-auto end-0 w-[150px] bg-white drop-shadow-xl" v-if="isLeftChatDropdown" @click.stop>
-                <li>
-                  <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeLeftChatDropdown();openChatDeleteModal()">
-                    Delete
-                  </button>
-                </li>
-              </ul>
-            </div>
+      <!-- empty Screen -->
+      <template v-else>
+        <div class="w-full h-[calc(100vh-175px)] flex justify-center items-center text-center flex-col">
+          <div class="text-[19px] font-bold mb-1">
+            No chat content
           </div>
-
-          <div class="flex justify-end items-start mb-3">
-            <div class="relative ms-3" id="rightChatDropdown">
-              <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openRightChatDropdown()">
-                <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                  <g id="SVGRepo_iconCarrier">
-                    <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
-                  </g>
-                </svg>
-              </button>
-              <ul class="absolute z-20 p-2 rounded-xl top-auto start-0 w-[150px] bg-white drop-shadow-xl" v-if="isRightChatDropdown" @click.stop>
-                <li>
-                  <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown()">
-                    Edit
-                  </button>
-                </li>
-                <li>
-                  <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown();openChatDeleteModal()">
-                    Delete
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div class="bg-blue-600 text-white shadow-lg overflow-hidden rounded-lg">
-              <div class="px-4 py-2 w-full text-[16px]">
-                Of Course, i can help you. But which type help you want?
-              </div>
-              <div class="text-[13px] text-end bg-blue-700 text-white px-4 py-2 shadow-inner"> 12:05 PM </div>
-            </div>
-            <div class="min-w-[50px] min-h-[50px] inline-flex justify-center font-medium items-center bg-blue-600 text-white rounded-full ms-3 shadow-lg">
-              MB
-            </div>
+          <div class="text-[16px] font-medium">
+            Available for now
           </div>
-
         </div>
-
-        <!-- Another User text submit part -->
-        <form @submit.prevent="manageChat()" class="p-3 w-full flex justify-between items-center">
-          <input type="text" name="message" v-model="formData.content" placeholder="Typing Here ..." class="w-full min-h-[50px] px-5 outline-0 bg-gray-200 border-0 block rounded-lg" autocomplete="off" />
-          <button type="submit" class="size-[50px] min-w-[50px] min-h-[50px] w-[50px] h-[50px] outline-0 border-0 bg-gray-200 inline-flex justify-center items-center group rounded-full ms-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 duration-500 rotate-0 group-hover:-rotate-45">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-            </svg>
-          </button>
-        </form>
-
-      </div>
+      </template>
 
     </div>
 
@@ -343,9 +340,7 @@
 </template>
 
 <script>
-
 import axios from "axios";
-
 import apiRoute from "../../api/apiRoute.js";
 import apiService from "../../api/apiService.js";
 
@@ -379,6 +374,9 @@ export default {
         content: '',
       },
       userData: [],
+      messages: [],
+      selectedUser: {},
+      selectedUserInitials: '',
     }
   },
   mounted() {
@@ -391,7 +389,6 @@ export default {
     this.getUserDetails();
     this.userList();
     this.chatList();
-
   },
   beforeUnmount() {
     /*** Before Unmounted properties ***/
@@ -401,120 +398,101 @@ export default {
     window.removeEventListener("click", this.handleRightChatDropdownClose);
   },
   methods: {
-
     /*** Open user dropdown ***/
     openUserDropdown() {
       this.isUserDropdown = true;
     },
-
     /*** Close user dropdown ***/
     closeUserDropdown() {
       this.isUserDropdown = false;
     },
-
     /*** Handle user dropdown close ***/
     handleUserDropdownClose() {
-      if(!event.target.closest("#userDropdown")) {
+      if (!event.target.closest("#userDropdown")) {
         this.isUserDropdown = false;
       }
     },
-
     /*** Open other user dropdown ***/
     openOtherUserDropdown() {
       this.isOtherUserDropdown = true;
     },
-
     /*** Close other user dropdown ***/
     closeOtherUserDropdown() {
       this.isOtherUserDropdown = false;
     },
-
     /*** Handle other user dropdown close ***/
     handleOtherUserDropdownClose() {
-      if(!event.target.closest("#otherUserDropdown")) {
+      if (!event.target.closest("#otherUserDropdown")) {
         this.isOtherUserDropdown = false;
       }
     },
-
     /*** Open left chat user dropdown ***/
     openLeftChatDropdown() {
       this.isLeftChatDropdown = true;
     },
-
     /*** Close left chat user dropdown ***/
     closeLeftChatDropdown() {
       this.isLeftChatDropdown = false;
     },
-
     /*** Handle left chat dropdown close ***/
     handleLeftChatDropdownClose() {
-      if(!event.target.closest("#leftChatDropdown")) {
+      if (!event.target.closest("#leftChatDropdown")) {
         this.isLeftChatDropdown = false;
       }
     },
-
     /*** Open right chat user dropdown ***/
     openRightChatDropdown() {
       this.isRightChatDropdown = true;
     },
-
     /*** Close right chat user dropdown ***/
     closeRightChatDropdown() {
       this.isRightChatDropdown = false;
     },
-
     /*** Handle right chat dropdown close ***/
     handleRightChatDropdownClose() {
-      if(!event.target.closest("#rightChatDropdown")) {
+      if (!event.target.closest("#rightChatDropdown")) {
         this.isRightChatDropdown = false;
       }
     },
-
     /*** Open edit profile modal ***/
     openEditProfileModal() {
       this.isEditProfileModal = true;
     },
-
     /*** Close edit profile modal ***/
     closeEditProfileModal() {
       this.isEditProfileModal = false;
     },
-
     /*** Open change password modal ***/
     openChangePasswordModal() {
       this.isChangePasswordModal = true;
     },
-
     /*** Close change password modal ***/
     closeChangePasswordModal() {
       this.isChangePasswordModal = false;
     },
-
     /*** Open change password modal ***/
     openChatDeleteModal(id) {
-      this.id = id
+      this.id = id;
       this.isChatDeleteModal = true;
     },
-
     /*** Close change password modal ***/
     closeChatDeleteModal() {
       this.isChatDeleteModal = false;
     },
-
     /*** Short name ***/
     shortName(fullName) {
       if (!fullName) return "";
       const words = fullName.trim().split(" ");
       return words.slice(0, 2).map(word => word[0]).join("").toUpperCase();
     },
-
     /*** Details api implementation ***/
     async getUserDetails() {
       this.loading = true;
       try {
-        const response = await axios.post(apiRoute.details, null, {headers: apiService.authHeaderContent()});
+        const response = await axios.post(apiRoute.details, null, { headers: apiService.authHeaderContent() });
         this.profileData = response.data.user;
         this.profileParam = JSON.parse(JSON.stringify(response.data.user));
+        this.formData.sender_id = response.data.user.id;
         this.closeEditProfileModal();
       } catch (error) {
         this.error = error.response.data.errors;
@@ -522,122 +500,136 @@ export default {
         this.loading = false;
       }
     },
-
     /*** Change details api implementation ***/
     async editProfile() {
       this.loading = true;
       try {
-        const response = await axios.post(apiRoute.changeDetails, this.profileParam, {headers: apiService.authHeaderContent()});
+        const response = await axios.post(apiRoute.changeDetails, this.profileParam, { headers: apiService.authHeaderContent() });
         await this.getUserDetails();
+        this.closeEditProfileModal();
       } catch (error) {
         this.error = error.response.data.errors;
       } finally {
         this.loading = false;
       }
     },
-
     /*** Change password api implementation ***/
     async changePassword() {
       this.loading = true;
       try {
-        const response = await axios.post(apiRoute.changePassword, this.passwordParam, {headers: apiService.authHeaderContent()});
+        const response = await axios.post(apiRoute.changePassword, this.passwordParam, { headers: apiService.authHeaderContent() });
         await this.getUserDetails();
+        this.closeChangePasswordModal();
       } catch (error) {
         this.error = error.response.data.errors;
       } finally {
         this.loading = false;
       }
     },
-
     /*** logout api implementation ***/
     async logout() {
       this.loading = true;
       try {
-        const response = await axios.post(apiRoute.logout, null, {headers: apiService.authHeaderContent()});
+        const response = await axios.post(apiRoute.logout, null, { headers: apiService.authHeaderContent() });
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        this.$router.push({name:'login'});
+        this.$router.push({ name: 'login' });
       } catch (error) {
-        console.log(error.response.data)
+        console.log(error.response.data);
       } finally {
         this.loading = false;
       }
     },
-
     /*** Chat list api implementation ***/
     async chatList() {
       this.loading = true;
       try {
-        const response = await axios.get(`${apiRoute.chat}/list`, {headers: apiService.authHeaderContent()});
+        const response = await axios.get(`${apiRoute.chat}/list`, { headers: apiService.authHeaderContent() });
+        this.messages = response.data.messages;
       } catch (error) {
-
+        console.log(error.response.data.errors);
       } finally {
         this.loading = false;
       }
     },
-
     /*** manage chat api ***/
     manageChat() {
-      if(this.formData.id) {
+      if (this.formData.id) {
         this.chatUpdate();
       } else {
         this.chatStore();
       }
     },
-
     /*** Chat store api implementation ***/
     async chatStore() {
       this.loading = true;
       try {
-        const response = await axios.post(`${apiRoute.chat}/store`, this.formData, {headers: apiService.authHeaderContent()});
+        const response = await axios.post(`${apiRoute.chat}/store`, this.formData, { headers: apiService.authHeaderContent() });
+        this.messages.push(response.data.message);
+        this.formData.content = '';
       } catch (error) {
-
+        console.log(error.response.data.errors);
       } finally {
         this.loading = false;
       }
     },
-
     /*** Chat show api implementation ***/
     async chatShow() {
       this.loading = true;
       try {
-        const response = await axios.put(`${apiRoute.chat}/show/${this.id}`, this.formData, {headers: apiService.authHeaderContent()});
+        const response = await axios.get(`${apiRoute.chat}/show/${this.id}`, { headers: apiService.authHeaderContent() });
+        this.formData = response.data.message;
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
         this.loading = false;
       }
     },
-
     /*** Chat update api implementation ***/
     async chatUpdate() {
       this.loading = true;
       try {
-        const response = await axios.patch(`${apiRoute.chat}/update/${this.id}`, this.formData, {headers: apiService.authHeaderContent()});
+        const response = await axios.patch(`${apiRoute.chat}/update/${this.id}`, this.formData, { headers: apiService.authHeaderContent() });
+        const index = this.messages.findIndex(message => message.id === response.data.message.id);
+        this.messages.splice(index, 1, response.data.message);
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
         this.loading = false;
       }
     },
-
     /*** Chat delete api implementation ***/
     async chatDelete() {
       this.loading = true;
       try {
-        const response = await axios.delete(`${apiRoute.chat}/delete/${this.id}`, {headers: apiService.authHeaderContent()});
+        const response = await axios.delete(`${apiRoute.chat}/delete/${this.id}`, { headers: apiService.authHeaderContent() });
+        this.messages = this.messages.filter(message => message.id !== this.id);
+        this.closeChatDeleteModal();
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
         this.loading = false;
       }
     },
-
     /*** Chat clear api implementation ***/
     async chatClear(id) {
       this.loading = true;
       try {
-        const response = await axios.delete(`${apiRoute.chat}/clear/${id}`, {headers: apiService.authHeaderContent()});
+        const response = await axios.delete(`${apiRoute.chat}/clear/${id}`, { headers: apiService.authHeaderContent() });
+        this.messages = [];
+      } catch (error) {
+        console.log(error.response.data.errors);
+      } finally {
+        this.loading = false;
+      }
+    },
+    /*** User list api implementation ***/
+    async userList() {
+      this.loading = true;
+      try {
+        const response = await axios.get(`${apiRoute.users}/other-users`, { headers: apiService.authHeaderContent() });
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        this.userData = response.data.users.filter(user => user.id !== currentUser.id);
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
@@ -645,20 +637,22 @@ export default {
       }
     },
 
-    async userList() {
-      this.loading = true;
-      try {
-        const response = await axios.get(`${apiRoute.users}/other-users`, {headers: apiService.authHeaderContent()});
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        this.userData = response.data.users.filter(user => user.id !== currentUser.id);
-      } catch (error) {
-
-      } finally {
-        this.loading = false;
-      }
+    /*** select user initialization ***/
+    selectUser(user) {
+      this.selectedUser = user;
+      this.selectedUserInitials = this.shortName(user.name);
+      this.formData.receiver_id = user.id;
+      this.chatList();
     },
 
+    /*** format date time ***/
+    formatDateTime(dateTime) {
+      const options = {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true
+      };
+      return new Date(dateTime).toLocaleString('en-GB', options);
+    }
   }
 }
-
 </script>

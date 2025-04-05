@@ -24,7 +24,7 @@ class ChatController extends BaseController
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'receiver_id' => 'required|string',
+            'receiver_id' => 'required',
             'content' => 'required|string',
         ]);
         if ($validator->fails()) {
