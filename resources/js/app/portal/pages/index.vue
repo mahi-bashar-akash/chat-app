@@ -1,0 +1,664 @@
+<template>
+
+  <div class="w-full flex justify-between items-center px-3 py-3 border-b border-b-gray-300">
+    <div class="text-[25px] font-bold"> Chat App </div>
+    <div class="relative" id="userDropdown">
+      <div class="cursor-pointer size-[55px] bg-gray-700 text-white rounded-full inline-flex justify-center items-center" @click="openUserDropdown()">
+        <template v-if="!loading">
+          {{shortName(profileData?.name)}}
+        </template>
+        <template v-if="loading">
+          <div class="animate-spin size-[25px] rounded-full border-2 border-transparent border-t-2 border-white"></div>
+        </template>
+      </div>
+      <ul class="absolute top-auto end-0 min-w-[210px] p-2 bg-white drop-shadow-xl border mt-2 rounded-lg z-50" v-if="isUserDropdown" @click.stop>
+        <li>
+          <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeUserDropdown();openEditProfileModal()">
+            Edit Profile
+          </button>
+        </li>
+        <li>
+          <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeUserDropdown();openChangePasswordModal()">
+            Change Password
+          </button>
+        </li>
+        <li>
+          <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="logout()">
+            Logout
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="w-full flex justify-start items-start h-[calc(100vh-178px)] overflow-hidden">
+
+    <!-- Search with Users List part -->
+    <div class="min-w-[350px] h-[calc(100vh-178px)] border-e border-e-gray-300">
+
+      <!-- Search -->
+      <div class="p-3 w-full">
+        <input type="text" name="keyword" placeholder="Search Here ..." class="w-full px-5 min-h-[50px] outline-0 block border-0 bg-gray-200 rounded-lg duration-500 focus-within:border-blue-700">
+      </div>
+
+      <div class="p-3 w-full scrollbar h-[calc(100vh-250px)]">
+
+        <!-- Users List -->
+
+        <template v-for="each in userData">
+          <button type="button" class="w-full flex justify-start items-center bg-transparent duration-500 hover:bg-gray-200 p-3 rounded-lg">
+          <span class="min-w-[50px] min-h-[50px] size-[50px] inline-flex justify-center rounded-full items-center bg-gray-600 text-white">
+            {{shortName(each.name)}}
+          </span>
+            <span class="ms-2 block">
+            <span class="block font-bold text-start"> {{each.name}} </span>
+            <span class="block font-medium text-[13px] text-start">
+              <span class="truncate overflow-hidden max-w-[200px]">
+                {{each.email}}
+              </span>
+            </span>
+          </span>
+          </button>
+        </template>
+
+      </div>
+
+    </div>
+
+    <!-- User List -->
+    <div class="min-w-[calc(100%-350px)]">
+
+      <!-- Another user chat visible part -->
+      <div class="w-full h-[calc(100vh-175px)]">
+
+        <!-- Another User info and action part -->
+        <div class="w-full flex justify-between items-center p-3">
+
+          <!-- Another User info part -->
+          <div class="flex justify-start items-center">
+            <div class="min-w-[50px] min-h-[50px] size-[50px] inline-flex justify-center rounded-full items-center bg-gray-600 text-white">
+              AJ
+            </div>
+            <div class="ms-2">
+              <div class="font-bold"> Ariful Jorder Arif </div>
+              <div class="font-medium text-[13px]"> arifuljorder@gmail.com </div>
+            </div>
+          </div>
+
+          <!-- Another User action part -->
+          <div class="relative" id="otherUserDropdown">
+            <button type="button" class="size-[50px] min-w-[50px] min-h-[50px] rounded-full inline-flex justify-center items-center bg-transparent duration-500 hover:bg-gray-300" @click="openOtherUserDropdown()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-[20px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+              </svg>
+            </button>
+            <ul class="absolute top-auto end-0 min-w-[210px] p-2 bg-white drop-shadow-xl border mt-2 rounded-lg z-50" v-if="isOtherUserDropdown" @click.stop>
+              <li>
+                <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeOtherUserDropdown();chatClear(null)">
+                  Clear Chat
+                </button>
+              </li>
+              <li>
+                <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeOtherUserDropdown()">
+                  Exit Chat
+                </button>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Another User chat visible part -->
+        <div class="w-full h-[calc(100vh-325px)] bg-gray-200 p-3 scrollbar">
+
+          <div class="flex justify-start items-start mb-3">
+            <div class="min-w-[50px] min-h-[50px] inline-flex justify-center font-medium items-center bg-white rounded-full me-3 shadow-lg">
+              AJ
+            </div>
+            <div class="bg-white shadow-lg overflow-hidden rounded-lg">
+              <div class="w-full px-4 py-2 text-[16px]">
+                Hey Brother, I need help can you please help me.
+              </div>
+              <div class="text-[12px] text-end bg-gray-100 px-4 py-2 shadow-inner"> 12:00 PM </div>
+            </div>
+            <div class="relative ms-3" id="leftChatDropdown">
+              <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openLeftChatDropdown()">
+                <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
+                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                  <g id="SVGRepo_iconCarrier">
+                    <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
+                  </g>
+                </svg>
+              </button>
+              <ul class="absolute z-20 p-2 rounded-xl top-auto end-0 w-[150px] bg-white drop-shadow-xl" v-if="isLeftChatDropdown" @click.stop>
+                <li>
+                  <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeLeftChatDropdown();openChatDeleteModal()">
+                    Delete
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="flex justify-end items-start mb-3">
+            <div class="relative ms-3" id="rightChatDropdown">
+              <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openRightChatDropdown()">
+                <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
+                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                  <g id="SVGRepo_iconCarrier">
+                    <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
+                  </g>
+                </svg>
+              </button>
+              <ul class="absolute z-20 p-2 rounded-xl top-auto start-0 w-[150px] bg-white drop-shadow-xl" v-if="isRightChatDropdown" @click.stop>
+                <li>
+                  <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown()">
+                    Edit
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown();openChatDeleteModal()">
+                    Delete
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <div class="bg-blue-600 text-white shadow-lg overflow-hidden rounded-lg">
+              <div class="px-4 py-2 w-full text-[16px]">
+                Of Course, i can help you. But which type help you want?
+              </div>
+              <div class="text-[13px] text-end bg-blue-700 text-white px-4 py-2 shadow-inner"> 12:05 PM </div>
+            </div>
+            <div class="min-w-[50px] min-h-[50px] inline-flex justify-center font-medium items-center bg-blue-600 text-white rounded-full ms-3 shadow-lg">
+              MB
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Another User text submit part -->
+        <form @submit.prevent="manageChat()" class="p-3 w-full flex justify-between items-center">
+          <input type="text" name="message" v-model="formData.content" placeholder="Typing Here ..." class="w-full min-h-[50px] px-5 outline-0 bg-gray-200 border-0 block rounded-lg" autocomplete="off" />
+          <button type="submit" class="size-[50px] min-w-[50px] min-h-[50px] w-[50px] h-[50px] outline-0 border-0 bg-gray-200 inline-flex justify-center items-center group rounded-full ms-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 duration-500 rotate-0 group-hover:-rotate-45">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+            </svg>
+          </button>
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- edit profile modal -->
+  <div class="fixed inset-0 p-5 size-full flex justify-center items-center duration-500 z-50" :class="{ 'invisible bg-black/35' : !isEditProfileModal, 'visible bg-black/65' : isEditProfileModal }" @click="isEditProfileModal = false">
+    <form @submit.prevent="editProfile()" class="bg-white rounded-2xl w-full max-w-[550px] duration-500 origin-top p-10" :class="{ 'translate-y-0 opacity-100' : isEditProfileModal, '-translate-y-1/2 opacity-0' : !isEditProfileModal }" @click.stop>
+
+      <!-- modal header -->
+      <div class="flex justify-between items-center mb-3">
+
+        <!-- modal header title -->
+        <div class="text-[21px] font-bold"> Edit Profile </div>
+
+        <!-- modal close btn -->
+        <button type="button" class="size-[45px] inline-flex justify-center items-center bg-transparent duration-500 hover:bg-gray-300 rounded-full" @click="closeEditProfileModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="size-6 stroke-black pointer-events-none">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+      </div>
+
+      <!-- modal body -->
+      <div class="w-full block">
+
+        <div class="block w-full mb-3">
+          <label for="name" class="block mb-1 w-full font-medium"> Name </label>
+          <input id="name" type="text" name="name" v-model="profileParam.name" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+        </div>
+
+        <div class="block w-full mb-3">
+          <label for="email" class="block mb-1 w-full font-medium"> Email </label>
+          <input id="email" type="email" name="email" v-model="profileParam.email" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+        </div>
+
+        <div class="block w-full mb-3">
+          <label for="phone" class="block mb-1 w-full font-medium"> Phone </label>
+          <input id="phone" type="text" name="phone" v-model="profileParam.phone" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+        </div>
+
+      </div>
+
+      <!-- modal footer -->
+      <div class="flex justify-end items-center gap-3">
+
+        <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl" @click="closeEditProfileModal()">
+          Cancel
+        </button>
+
+        <button type="submit" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl">
+          Update
+        </button>
+
+      </div>
+
+    </form>
+  </div>
+
+  <!-- change password modal -->
+  <div class="fixed inset-0 p-5 size-full flex justify-center items-center duration-500 z-50" :class="{ 'invisible bg-black/35' : !isChangePasswordModal, 'visible bg-black/65' : isChangePasswordModal }" @click="isChangePasswordModal = false">
+    <form @submit.prevent="changePassword()" class="bg-white rounded-2xl w-full max-w-[550px] duration-500 origin-top p-10" :class="{ 'translate-y-0 opacity-100' : isChangePasswordModal, '-translate-y-1/2 opacity-0' : !isChangePasswordModal }" @click.stop>
+
+      <!-- modal header -->
+      <div class="flex justify-between items-center mb-3">
+
+        <!-- modal header title -->
+        <div class="text-[21px] font-bold"> Change Password </div>
+
+        <!-- modal close btn -->
+        <button type="button" class="size-[45px] inline-flex justify-center items-center bg-transparent duration-500 hover:bg-gray-300 rounded-full" @click="closeChangePasswordModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="size-6 stroke-black pointer-events-none">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+      </div>
+
+      <!-- modal body -->
+      <div class="w-full block">
+
+        <div class="block w-full mb-3">
+          <label for="current_password" class="block mb-1 w-full font-medium"> Current Password </label>
+          <input id="current_password" type="text" name="current_password" v-model="passwordParam.current_password" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+        </div>
+
+        <div class="block w-full mb-3">
+          <label for="new_password" class="block mb-1 w-full font-medium"> New Password </label>
+          <input id="new_password" type="text" name="new_password" v-model="passwordParam.new_password" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+        </div>
+
+        <div class="block w-full mb-3">
+          <label for="new_password_confirmation" class="block mb-1 w-full font-medium"> New Confirm Password </label>
+          <input id="new_password_confirmation" type="text" name="new_password_confirmation" v-model="passwordParam.new_password_confirmation" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+        </div>
+
+      </div>
+
+      <!-- modal footer -->
+      <div class="flex justify-end items-center gap-3">
+
+        <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl" @click="closeChangePasswordModal()">
+          Cancel
+        </button>
+
+        <button type="submit" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl">
+          Update
+        </button>
+
+      </div>
+
+    </form>
+  </div>
+
+  <!-- chat delete modal -->
+  <div class="fixed inset-0 p-5 size-full flex justify-center items-center duration-500 z-50" :class="{ 'invisible bg-black/35' : !isChatDeleteModal, 'visible bg-black/65' : isChatDeleteModal }" @click="isChatDeleteModal = false">
+    <form @submit.prevent="chatDelete()" class="bg-white rounded-2xl w-full max-w-[500px] duration-500 origin-top px-10 py-16" :class="{ 'translate-y-0 opacity-100' : isChatDeleteModal, '-translate-y-1/2 opacity-0' : !isChatDeleteModal }" @click.stop>
+
+      <div class="mb-3 flex justify-center">
+        <svg viewBox="0 0 24 24" class="size-[85px]" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+          <g id="SVGRepo_iconCarrier">
+            <path class="stroke-rose-600" d="M20.5001 6H3.5" stroke-width="1.5" stroke-linecap="round"></path>
+            <path class="stroke-rose-600" d="M6.5 6C6.55588 6 6.58382 6 6.60915 5.99936C7.43259 5.97849 8.15902 5.45491 8.43922 4.68032C8.44784 4.65649 8.45667 4.62999 8.47434 4.57697L8.57143 4.28571C8.65431 4.03708 8.69575 3.91276 8.75071 3.8072C8.97001 3.38607 9.37574 3.09364 9.84461 3.01877C9.96213 3 10.0932 3 10.3553 3H13.6447C13.9068 3 14.0379 3 14.1554 3.01877C14.6243 3.09364 15.03 3.38607 15.2493 3.8072C15.3043 3.91276 15.3457 4.03708 15.4286 4.28571L15.5257 4.57697C15.5433 4.62992 15.5522 4.65651 15.5608 4.68032C15.841 5.45491 16.5674 5.97849 17.3909 5.99936C17.4162 6 17.4441 6 17.5 6" stroke-width="1.5"></path>
+            <path class="stroke-rose-600" d="M18.3735 15.3991C18.1965 18.054 18.108 19.3815 17.243 20.1907C16.378 21 15.0476 21 12.3868 21H11.6134C8.9526 21 7.6222 21 6.75719 20.1907C5.89218 19.3815 5.80368 18.054 5.62669 15.3991L5.16675 8.5M18.8334 8.5L18.6334 11.5" stroke-width="1.5" stroke-linecap="round"></path>
+          </g>
+        </svg>
+      </div>
+
+      <div class="mb-5 text-center text-[21px] font-medium">
+        Are you sure?
+      </div>
+
+      <!-- modal footer -->
+      <div class="flex justify-center items-center gap-3">
+
+        <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl" @click="closeChatDeleteModal()">
+          Cancel
+        </button>
+
+        <button type="submit" class="outline-0 border-0 bg-rose-200 duration-500 hover:bg-rose-600 text-rose-900 hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl">
+          Confirm
+        </button>
+
+      </div>
+
+    </form>
+  </div>
+
+</template>
+
+<script>
+
+import axios from "axios";
+
+import apiRoute from "../../api/apiRoute.js";
+import apiService from "../../api/apiService.js";
+
+export default {
+  data() {
+    return {
+      /*** Data properties ***/
+      isUserDropdown: false,
+      isOtherUserDropdown: false,
+      isLeftChatDropdown: false,
+      isRightChatDropdown: false,
+      isEditProfileModal: false,
+      isChangePasswordModal: false,
+      isChatDeleteModal: false,
+      loading: false,
+      profileData: null,
+      id: null,
+      profileParam: {
+        name: '',
+        email: '',
+        phone: '',
+      },
+      passwordParam: {
+        current_password: '',
+        new_password: '',
+        new_password_confirmation: '',
+      },
+      formData: {
+        sender_id: '',
+        receiver_id: '',
+        content: '',
+      },
+      userData: [],
+    }
+  },
+  mounted() {
+    /*** Mounted properties ***/
+    window.addEventListener("click", this.handleUserDropdownClose);
+    window.addEventListener("click", this.handleOtherUserDropdownClose);
+    window.addEventListener("click", this.handleLeftChatDropdownClose);
+    window.addEventListener("click", this.handleRightChatDropdownClose);
+
+    this.getUserDetails();
+    this.userList();
+    this.chatList();
+
+  },
+  beforeUnmount() {
+    /*** Before Unmounted properties ***/
+    window.removeEventListener("click", this.handleUserDropdownClose);
+    window.removeEventListener("click", this.handleOtherUserDropdownClose);
+    window.removeEventListener("click", this.handleLeftChatDropdownClose);
+    window.removeEventListener("click", this.handleRightChatDropdownClose);
+  },
+  methods: {
+
+    /*** Open user dropdown ***/
+    openUserDropdown() {
+      this.isUserDropdown = true;
+    },
+
+    /*** Close user dropdown ***/
+    closeUserDropdown() {
+      this.isUserDropdown = false;
+    },
+
+    /*** Handle user dropdown close ***/
+    handleUserDropdownClose() {
+      if(!event.target.closest("#userDropdown")) {
+        this.isUserDropdown = false;
+      }
+    },
+
+    /*** Open other user dropdown ***/
+    openOtherUserDropdown() {
+      this.isOtherUserDropdown = true;
+    },
+
+    /*** Close other user dropdown ***/
+    closeOtherUserDropdown() {
+      this.isOtherUserDropdown = false;
+    },
+
+    /*** Handle other user dropdown close ***/
+    handleOtherUserDropdownClose() {
+      if(!event.target.closest("#otherUserDropdown")) {
+        this.isOtherUserDropdown = false;
+      }
+    },
+
+    /*** Open left chat user dropdown ***/
+    openLeftChatDropdown() {
+      this.isLeftChatDropdown = true;
+    },
+
+    /*** Close left chat user dropdown ***/
+    closeLeftChatDropdown() {
+      this.isLeftChatDropdown = false;
+    },
+
+    /*** Handle left chat dropdown close ***/
+    handleLeftChatDropdownClose() {
+      if(!event.target.closest("#leftChatDropdown")) {
+        this.isLeftChatDropdown = false;
+      }
+    },
+
+    /*** Open right chat user dropdown ***/
+    openRightChatDropdown() {
+      this.isRightChatDropdown = true;
+    },
+
+    /*** Close right chat user dropdown ***/
+    closeRightChatDropdown() {
+      this.isRightChatDropdown = false;
+    },
+
+    /*** Handle right chat dropdown close ***/
+    handleRightChatDropdownClose() {
+      if(!event.target.closest("#rightChatDropdown")) {
+        this.isRightChatDropdown = false;
+      }
+    },
+
+    /*** Open edit profile modal ***/
+    openEditProfileModal() {
+      this.isEditProfileModal = true;
+    },
+
+    /*** Close edit profile modal ***/
+    closeEditProfileModal() {
+      this.isEditProfileModal = false;
+    },
+
+    /*** Open change password modal ***/
+    openChangePasswordModal() {
+      this.isChangePasswordModal = true;
+    },
+
+    /*** Close change password modal ***/
+    closeChangePasswordModal() {
+      this.isChangePasswordModal = false;
+    },
+
+    /*** Open change password modal ***/
+    openChatDeleteModal(id) {
+      this.id = id
+      this.isChatDeleteModal = true;
+    },
+
+    /*** Close change password modal ***/
+    closeChatDeleteModal() {
+      this.isChatDeleteModal = false;
+    },
+
+    /*** Short name ***/
+    shortName(fullName) {
+      if (!fullName) return "";
+      const words = fullName.trim().split(" ");
+      return words.slice(0, 2).map(word => word[0]).join("").toUpperCase();
+    },
+
+    /*** Details api implementation ***/
+    async getUserDetails() {
+      this.loading = true;
+      try {
+        const response = await axios.post(apiRoute.details, null, {headers: apiService.authHeaderContent()});
+        this.profileData = response.data.user;
+        this.profileParam = JSON.parse(JSON.stringify(response.data.user));
+        this.closeEditProfileModal();
+      } catch (error) {
+        this.error = error.response.data.errors;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /*** Change details api implementation ***/
+    async editProfile() {
+      this.loading = true;
+      try {
+        const response = await axios.post(apiRoute.changeDetails, this.profileParam, {headers: apiService.authHeaderContent()});
+        await this.getUserDetails();
+      } catch (error) {
+        this.error = error.response.data.errors;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /*** Change password api implementation ***/
+    async changePassword() {
+      this.loading = true;
+      try {
+        const response = await axios.post(apiRoute.changePassword, this.passwordParam, {headers: apiService.authHeaderContent()});
+        await this.getUserDetails();
+      } catch (error) {
+        this.error = error.response.data.errors;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /*** logout api implementation ***/
+    async logout() {
+      this.loading = true;
+      try {
+        const response = await axios.post(apiRoute.logout, null, {headers: apiService.authHeaderContent()});
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        this.$router.push({name:'login'});
+      } catch (error) {
+        console.log(error.response.data)
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /*** Chat list api implementation ***/
+    async chatList() {
+      this.loading = true;
+      try {
+        const response = await axios.get(`${apiRoute.chat}/list`, {headers: apiService.authHeaderContent()});
+      } catch (error) {
+
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /*** manage chat api ***/
+    manageChat() {
+      if(this.formData.id) {
+        this.chatUpdate();
+      } else {
+        this.chatStore();
+      }
+    },
+
+    /*** Chat store api implementation ***/
+    async chatStore() {
+      this.loading = true;
+      try {
+        const response = await axios.post(`${apiRoute.chat}/store`, this.formData, {headers: apiService.authHeaderContent()});
+      } catch (error) {
+
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /*** Chat show api implementation ***/
+    async chatShow() {
+      this.loading = true;
+      try {
+        const response = await axios.put(`${apiRoute.chat}/show/${this.id}`, this.formData, {headers: apiService.authHeaderContent()});
+      } catch (error) {
+        console.log(error.response.data.errors);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /*** Chat update api implementation ***/
+    async chatUpdate() {
+      this.loading = true;
+      try {
+        const response = await axios.patch(`${apiRoute.chat}/update/${this.id}`, this.formData, {headers: apiService.authHeaderContent()});
+      } catch (error) {
+        console.log(error.response.data.errors);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /*** Chat delete api implementation ***/
+    async chatDelete() {
+      this.loading = true;
+      try {
+        const response = await axios.delete(`${apiRoute.chat}/delete/${this.id}`, {headers: apiService.authHeaderContent()});
+      } catch (error) {
+        console.log(error.response.data.errors);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /*** Chat clear api implementation ***/
+    async chatClear(id) {
+      this.loading = true;
+      try {
+        const response = await axios.delete(`${apiRoute.chat}/clear/${id}`, {headers: apiService.authHeaderContent()});
+      } catch (error) {
+        console.log(error.response.data.errors);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async userList() {
+      this.loading = true;
+      try {
+        const response = await axios.get(`${apiRoute.users}/other-users`, {headers: apiService.authHeaderContent()});
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        this.userData = response.data.users.filter(user => user.id !== currentUser.id);
+      } catch (error) {
+
+      } finally {
+        this.loading = false;
+      }
+    },
+
+  }
+}
+
+</script>
