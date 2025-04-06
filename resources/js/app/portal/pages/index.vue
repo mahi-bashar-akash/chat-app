@@ -3,28 +3,26 @@
   <div class="w-full flex justify-between items-center px-3 py-3 border-b border-b-gray-300">
     <div class="text-[25px] font-bold"> Chat App </div>
     <div class="relative" id="userDropdown">
-      <div class="cursor-pointer size-[55px] bg-gray-700 text-white rounded-full inline-flex justify-center items-center" @click="openUserDropdown()">
-        <template v-if="!loading">
-          {{shortName(profileData?.name)}}
-        </template>
-        <template v-if="loading">
-          <div class="animate-spin size-[25px] rounded-full border-2 border-transparent border-t-2 border-white"></div>
-        </template>
+      <div class="cursor-pointer size-[55px] bg-gray-700 font-medium text-white rounded-full inline-flex justify-center items-center" @click="openUserDropdown()">
+        {{shortName(profileData?.name)}}
       </div>
       <ul class="absolute top-auto end-0 min-w-[210px] p-2 bg-white drop-shadow-xl border mt-2 rounded-lg z-50" v-if="isUserDropdown" @click.stop>
         <li>
-          <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeUserDropdown();openEditProfileModal()">
+          <button type="button" class="cursor-pointer decoration-0 block w-full px-5 min-h-[48px] max-h-[48px] font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeUserDropdown();openEditProfileModal()">
             Edit Profile
           </button>
         </li>
         <li>
-          <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeUserDropdown();openChangePasswordModal()">
+          <button type="button" class="cursor-pointer decoration-0 block w-full px-5 min-h-[48px] max-h-[48px] font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeUserDropdown();openChangePasswordModal()">
             Change Password
           </button>
         </li>
         <li>
-          <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="logout()">
+          <button type="button" class="cursor-pointer decoration-0 block w-full px-5 min-h-[48px] max-h-[48px] font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" v-if="!logoutLoading" @click="logout()">
             Logout
+          </button>
+          <button type="button" class="cursor-pointer decoration-0 flex justify-center items-center w-full px-5 min-h-[48px] max-h-[48px] font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" v-if="logoutLoading">
+            <span class="inline-block size-[20px] rounded-full border-2 border-transparent border-t-2 border-t-black animate-spin"></span>
           </button>
         </li>
       </ul>
@@ -38,14 +36,13 @@
 
       <!-- Search -->
       <div class="p-3 w-full">
-        <input type="text" name="keyword" placeholder="Search Here ..." class="w-full px-5 min-h-[50px] outline-0 block border-0 bg-gray-200 rounded-lg duration-500 focus-within:border-blue-700">
+        <input type="text" name="keyword" v-model="keyword" @input="searchData()" placeholder="Search Here ..." class="w-full px-5 min-h-[50px] outline-0 block border-0 bg-gray-200 rounded-lg duration-500 focus-within:border-blue-700">
       </div>
 
+      <!-- Users List -->
       <div class="p-3 w-full scrollbar h-[calc(100vh-250px)]">
 
-        <!-- Users List -->
-
-        <template v-for="each in userData">
+        <template v-for="each in showList" v-if="userData.length > 0">
           <button type="button" class="w-full flex justify-start items-center bg-transparent duration-500 hover:bg-gray-200 p-3 rounded-lg" @click="selectUser(each)">
           <span class="min-w-[50px] min-h-[50px] size-[50px] inline-flex justify-center rounded-full items-center bg-gray-600 text-white">
             {{shortName(each.name)}}
@@ -65,7 +62,7 @@
 
     </div>
 
-    <!-- User List -->
+    <!-- User conversation -->
     <div class="min-w-[calc(100%-350px)]">
 
       <!-- Another user chat visible part -->
@@ -95,8 +92,11 @@
               </button>
               <ul class="absolute top-auto end-0 min-w-[210px] p-2 bg-white drop-shadow-xl border mt-2 rounded-lg z-50" v-if="isOtherUserDropdown" @click.stop>
                 <li>
-                  <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeOtherUserDropdown();chatClear(selectedUser.id)">
+                  <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeOtherUserDropdown();chatClear(selectedUser.id)" v-if="!chatClearLoading">
                     Clear Chat
+                  </button>
+                  <button type="button" class="cursor-pointer decoration-0 flex justify-center items-center w-full px-5 min-h-[48px] max-h-[48px] font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" v-if="chatClearLoading">
+                    <span class="inline-block size-[20px] border-2 border-transparent border-t-2 border-t-black rounded-full animate-spin"></span>
                   </button>
                 </li>
                 <li>
@@ -117,7 +117,7 @@
                 AJ
               </div>
               <div class="bg-white shadow-lg overflow-hidden rounded-lg min-w-[250px]">
-                <div class="w-full px-4 py-2 text-[16px]">
+                <div class="w-full px-4 py-2 text-[16px] font-medium">
                   Hello World
                 </div>
                 <div class="text-[12px] text-end bg-gray-100 px-4 py-2 shadow-inner">
@@ -125,12 +125,12 @@
                 </div>
               </div>
               <div class="relative ms-3" id="leftChatDropdown">
-                <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openLeftChatDropdown()">
+                <button type="button" class="size-[45px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openLeftChatDropdown()">
                   <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
                     <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
                   </svg>
                 </button>
-                <ul class="absolute z-20 p-2 rounded-xl top-auto end-0 w-[150px] bg-white drop-shadow-xl" v-if="isLeftChatDropdown" @click.stop>
+                <ul class="absolute z-20 p-2 rounded-xl top-auto end-0 w-[150px] bg-white drop-shadow-xl mt-1" v-if="isLeftChatDropdown" @click.stop>
                   <li>
                     <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeLeftChatDropdown();openChatDeleteModal()">
                       Delete
@@ -142,12 +142,12 @@
 
             <div class="flex justify-end items-start mb-3">
               <div class="relative me-3" id="rightChatDropdown">
-                <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openRightChatDropdown()">
+                <button type="button" class="size-[45px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openRightChatDropdown()">
                   <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
                     <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
                   </svg>
                 </button>
-                <ul class="absolute z-20 p-2 rounded-xl top-auto start-0 w-[150px] bg-white drop-shadow-xl" v-if="isRightChatDropdown" @click.stop>
+                <ul class="absolute z-20 p-2 rounded-xl top-auto start-0 w-[150px] bg-white drop-shadow-xl mt-1" v-if="isRightChatDropdown" @click.stop>
                   <li>
                     <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown()">
                       Edit
@@ -161,18 +161,18 @@
                 </ul>
               </div>
               <div class="bg-blue-600 shadow-lg overflow-hidden text-white rounded-lg min-w-[250px]">
-                <div class="w-full px-4 py-2 text-[16px]">
+                <div class="w-full px-4 py-2 text-[16px] font-medium">
                   Hello World
                 </div>
                 <div class="text-[12px] text-end bg-blue-500 text-white px-4 py-2 shadow-inner">
-                  01:05 AM
+                  01:07 AM
                 </div>
               </div>
               <div class="min-w-[50px] min-h-[50px] inline-flex justify-center bg-blue-600 text-white font-medium items-center rounded-full ms-3 shadow-lg">
                 MB
               </div>
             </div>
-            
+
           </div>
 
           <!-- Another User text submit part -->
@@ -229,16 +229,19 @@
         <div class="block w-full mb-3">
           <label for="name" class="block mb-1 w-full font-medium"> Name </label>
           <input id="name" type="text" name="name" v-model="profileParam.name" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+          <div class="text-[13px] text-rose-600" v-if="error.name"> {{error.name[0]}} </div>
         </div>
 
         <div class="block w-full mb-3">
           <label for="email" class="block mb-1 w-full font-medium"> Email </label>
           <input id="email" type="email" name="email" v-model="profileParam.email" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+          <div class="text-[13px] text-rose-600" v-if="error.email"> {{error.email[0]}} </div>
         </div>
 
         <div class="block w-full mb-3">
           <label for="phone" class="block mb-1 w-full font-medium"> Phone </label>
           <input id="phone" type="text" name="phone" v-model="profileParam.phone" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+          <div class="text-[13px] text-rose-600" v-if="error.phone"> {{error.phone[0]}} </div>
         </div>
 
       </div>
@@ -246,12 +249,15 @@
       <!-- modal footer -->
       <div class="flex justify-end items-center gap-3">
 
-        <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl" @click="closeEditProfileModal()">
+        <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" @click="closeEditProfileModal()">
           Cancel
         </button>
 
-        <button type="submit" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl">
+        <button type="submit" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" v-if="!editProfileLoading">
           Update
+        </button>
+        <button type="button" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl group" v-if="editProfileLoading">
+          <span class="inline-block size-[20px] rounded-full border-2 border-transparent border-t-2 border-t-blue-600 group-hover:border-t-white animate-spin"></span>
         </button>
 
       </div>
@@ -283,17 +289,20 @@
 
         <div class="block w-full mb-3">
           <label for="current_password" class="block mb-1 w-full font-medium"> Current Password </label>
-          <input id="current_password" type="text" name="current_password" v-model="passwordParam.current_password" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+          <input id="current_password" type="password" name="current_password" placeholder="Enter your current password" v-model="passwordParam.current_password" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+          <div class="text-[13px] text-rose-600" v-if="error.current_password"> {{error.current_password[0]}} </div>
         </div>
 
         <div class="block w-full mb-3">
           <label for="new_password" class="block mb-1 w-full font-medium"> New Password </label>
-          <input id="new_password" type="text" name="new_password" v-model="passwordParam.new_password" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+          <input id="new_password" type="password" name="new_password" placeholder="Enter your new password" v-model="passwordParam.new_password" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+          <div class="text-[13px] text-rose-600" v-if="error.new_password"> {{error.new_password[0]}} </div>
         </div>
 
         <div class="block w-full mb-3">
           <label for="new_password_confirmation" class="block mb-1 w-full font-medium"> New Confirm Password </label>
-          <input id="new_password_confirmation" type="text" name="new_password_confirmation" v-model="passwordParam.new_password_confirmation" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+          <input id="new_password_confirmation" type="password" name="new_password_confirmation" placeholder="Enter your new confirm password" v-model="passwordParam.new_password_confirmation" class="w-full block px-4 py-3 rounded-xl outline-0 border border-gray-300 focus-within:border-blue-600 duration-500" autocomplete="off" />
+          <div class="text-[13px] text-rose-600" v-if="error.new_password_confirmation"> {{error.new_password_confirmation[0]}} </div>
         </div>
 
       </div>
@@ -301,12 +310,15 @@
       <!-- modal footer -->
       <div class="flex justify-end items-center gap-3">
 
-        <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl" @click="closeChangePasswordModal()">
+        <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" @click="closeChangePasswordModal()">
           Cancel
         </button>
 
-        <button type="submit" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl">
+        <button type="submit" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" v-if="!changePasswordLoading">
           Update
+        </button>
+        <button type="button" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl group" v-if="changePasswordLoading">
+          <span class="inline-block size-[20px] rounded-full border-2 border-transparent border-t-2 border-t-blue-600 group-hover:border-t-white animate-spin"></span>
         </button>
 
       </div>
@@ -337,12 +349,16 @@
       <!-- modal footer -->
       <div class="flex justify-center items-center gap-3">
 
-        <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl" @click="closeChatDeleteModal()">
+        <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" @click="closeChatDeleteModal()">
           Cancel
         </button>
 
-        <button type="submit" class="outline-0 border-0 bg-rose-200 duration-500 hover:bg-rose-600 text-rose-900 hover:text-white inline-flex justify-center items-center min-w-[120px] py-3 rounded-xl">
+        <button type="submit" class="outline-0 border-0 bg-rose-200 duration-500 hover:bg-rose-600 text-rose-900 hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" v-if="!deleteLoading">
           Confirm
+        </button>
+
+        <button type="button" class="outline-0 border-0 bg-rose-200 duration-500 hover:bg-rose-600 text-rose-900 hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl group" v-if="deleteLoading">
+          <span class="inline-block size-[20px] rounded-full border-2 border-transparent border-t-2 border-t-rose-600 group-hover:border-t-white animate-spin"></span>
         </button>
 
       </div>
@@ -358,6 +374,21 @@ import apiRoute from "../../api/apiRoute.js";
 import apiService from "../../api/apiService.js";
 
 export default {
+  computed: {
+
+    filteredUserList() {
+      return this.userData.filter((list) => {
+        return !this.keyword || list.name.toLowerCase().includes(this.keyword.toLowerCase()) || list.email.toLowerCase().includes(this.keyword.toLowerCase());
+      });
+    },
+
+    showList() {
+      return [...this.filteredUserList].sort((a, b) => {
+        return b.id - a.id;
+      });
+    }
+
+  },
   data() {
     return {
       /*** Data properties ***/
@@ -368,9 +399,16 @@ export default {
       isEditProfileModal: false,
       isChangePasswordModal: false,
       isChatDeleteModal: false,
+      logoutLoading: false,
       loading: false,
+      userLoading: false,
+      editProfileLoading: false,
+      changePasswordLoading: false,
+      deleteLoading: false,
+      chatClearLoading: false,
       profileData: null,
       id: null,
+      keyword: '',
       profileParam: {
         name: '',
         email: '',
@@ -381,6 +419,7 @@ export default {
         new_password: '',
         new_password_confirmation: '',
       },
+      error: {},
       formData: {
         sender_id: '',
         receiver_id: '',
@@ -481,6 +520,7 @@ export default {
 
     /*** Open edit profile modal ***/
     openEditProfileModal() {
+      this.error = {};
       this.isEditProfileModal = true;
     },
 
@@ -491,6 +531,7 @@ export default {
 
     /*** Open change password modal ***/
     openChangePasswordModal() {
+      this.error = {};
       this.isChangePasswordModal = true;
     },
 
@@ -535,7 +576,7 @@ export default {
 
     /*** Change details api implementation ***/
     async editProfile() {
-      this.loading = true;
+      this.editProfileLoading = true;
       try {
         const response = await axios.post(apiRoute.changeDetails, this.profileParam, { headers: apiService.authHeaderContent() });
         await this.getUserDetails();
@@ -543,13 +584,13 @@ export default {
       } catch (error) {
         this.error = error.response.data.errors;
       } finally {
-        this.loading = false;
+        this.editProfileLoading = false;
       }
     },
 
     /*** Change password api implementation ***/
     async changePassword() {
-      this.loading = true;
+      this.changePasswordLoading = true;
       try {
         const response = await axios.post(apiRoute.changePassword, this.passwordParam, { headers: apiService.authHeaderContent() });
         await this.getUserDetails();
@@ -557,13 +598,13 @@ export default {
       } catch (error) {
         this.error = error.response.data.errors;
       } finally {
-        this.loading = false;
+        this.changePasswordLoading = false;
       }
     },
 
     /*** logout api implementation ***/
     async logout() {
-      this.loading = true;
+      this.logoutLoading = true;
       try {
         const response = await axios.post(apiRoute.logout, null, { headers: apiService.authHeaderContent() });
         localStorage.removeItem('token');
@@ -572,7 +613,7 @@ export default {
       } catch (error) {
         console.log(error.response.data);
       } finally {
-        this.loading = false;
+        this.logoutLoading = false;
       }
     },
 
@@ -641,7 +682,7 @@ export default {
 
     /*** Chat delete api implementation ***/
     async chatDelete() {
-      this.loading = true;
+      this.deleteLoading = true;
       try {
         const response = await axios.delete(`${apiRoute.chat}/delete/${this.id}`, { headers: apiService.authHeaderContent() });
         this.messages = this.messages.filter(message => message.id !== this.id);
@@ -649,26 +690,26 @@ export default {
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
-        this.loading = false;
+        this.deleteLoading = false;
       }
     },
 
     /*** Chat clear api implementation ***/
     async chatClear(id) {
-      this.loading = true;
+      this.chatClearLoading = true;
       try {
         const response = await axios.delete(`${apiRoute.chat}/clear/${id}`, { headers: apiService.authHeaderContent() });
         this.messages = [];
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
-        this.loading = false;
+        this.chatClearLoading = false;
       }
     },
 
     /*** User list api implementation ***/
     async userList() {
-      this.loading = true;
+      this.userLoading = true;
       try {
         const response = await axios.get(`${apiRoute.users}/other-users`, { headers: apiService.authHeaderContent() });
         const currentUser = JSON.parse(localStorage.getItem('user'));
@@ -676,11 +717,11 @@ export default {
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
-        this.loading = false;
+        this.userLoading = false;
       }
     },
 
-    /*** select user initialization ***/
+    /*** Select user initialization ***/
     selectUser(user) {
       this.selectedUser = user;
       this.selectedUserInitials = this.shortName(user.name);
@@ -688,13 +729,21 @@ export default {
       this.chatList();
     },
 
-    /*** format date time ***/
+    /*** Format date time ***/
     formatDateTime(dateTime) {
       const options = {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit', hour12: true
       };
       return new Date(dateTime).toLocaleString('en-GB', options);
+    },
+
+    /*** Search data ***/
+    searchData() {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = setTimeout(() => {
+        this.userList();
+      }, 500);
     },
 
   }
