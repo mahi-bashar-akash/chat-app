@@ -111,10 +111,10 @@
 
           <!-- Chat messages -->
           <div class="w-full h-[calc(100vh-325px)] bg-gray-200 p-3 scrollbar overflow-y-auto">
-            <div v-for="(message) in messages" :key="message.id" class="flex mb-3" :class="message.sender_id === profileData.id ? 'justify-end items-start' : 'justify-start items-start'">
+            <div v-for="(message) in messages" :key="message.id" class="flex mb-3" :class="message.sender_id == profileData.id ? 'justify-end items-start' : 'justify-start items-start'">
 
               <!-- Received Message -->
-              <template v-if="message.sender_id !== profileData.id">
+              <template v-if="message.sender_id != profileData.id">
                 <div class="min-w-[50px] min-h-[50px] inline-flex bg-white justify-center font-medium items-center rounded-full me-3 shadow-lg">
                   {{ getInitials(message.sender_id) }}
                 </div>
@@ -523,8 +523,10 @@ export default {
       this.editProfileLoading = true;
       try {
         const response = await axios.post(apiRoute.changeDetails, this.profileParam, { headers: apiService.authHeaderContent() });
-        await this.getUserDetails();
-        this.closeEditProfileModal();
+        if(response) {
+          await this.getUserDetails();
+          this.closeEditProfileModal();
+        }
       } catch (error) {
         this.error = error.response.data.errors;
       } finally {
@@ -537,8 +539,10 @@ export default {
       this.changePasswordLoading = true;
       try {
         const response = await axios.post(apiRoute.changePassword, this.passwordParam, { headers: apiService.authHeaderContent() });
-        await this.getUserDetails();
-        this.closeChangePasswordModal();
+        if(response) {
+          await this.getUserDetails();
+          this.closeChangePasswordModal();
+        }
       } catch (error) {
         this.error = error.response.data.errors;
       } finally {
@@ -551,9 +555,11 @@ export default {
       this.logoutLoading = true;
       try {
         const response = await axios.post(apiRoute.logout, null, { headers: apiService.authHeaderContent() });
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        this.$router.push({ name: 'login' });
+        if(response) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          this.$router.push({ name: 'login' });
+        }
       } catch (error) {
         console.log(error.response.data);
       } finally {
@@ -597,19 +603,6 @@ export default {
       }
     },
 
-    /*** Chat show api implementation ***/
-    async chatShow() {
-      this.loading = true;
-      try {
-        const response = await axios.get(`${apiRoute.chat}/show/${this.id}`, { headers: apiService.authHeaderContent() });
-        this.formData = response.data.message;
-      } catch (error) {
-        console.log(error.response.data.errors);
-      } finally {
-        this.loading = false;
-      }
-    },
-
     /*** Chat update api implementation ***/
     async chatUpdate() {
       this.loading = true;
@@ -629,8 +622,10 @@ export default {
       this.deleteLoading = true;
       try {
         const response = await axios.delete(`${apiRoute.chat}/delete/${this.id}`, { headers: apiService.authHeaderContent() });
-        this.messages = this.messages.filter(message => message.id !== this.id);
-        this.closeChatDeleteModal();
+        if(response) {
+          this.messages = this.messages.filter(message => message.id !== this.id);
+          this.closeChatDeleteModal();
+        }
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
@@ -643,8 +638,10 @@ export default {
       this.chatClearLoading = true;
       try {
         const response = await axios.delete(`${apiRoute.chat}/clear`, { headers: apiService.authHeaderContent() });
-        this.messages = [];
-        this.closeOtherUserDropdown();
+        if(response) {
+          this.messages = [];
+          this.closeOtherUserDropdown();
+        }
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
@@ -676,9 +673,7 @@ export default {
 
     /*** Format date time ***/
     formatTime(Time) {
-      const options = {
-        hour: '2-digit', minute: '2-digit', hour12: true
-      };
+      const options = { hour: '2-digit', minute: '2-digit', hour12: true };
       return new Date(Time).toLocaleString('en-GB', options);
     },
 
