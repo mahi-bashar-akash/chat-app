@@ -92,7 +92,7 @@
               </button>
               <ul class="absolute top-auto end-0 min-w-[210px] p-2 bg-white drop-shadow-xl border mt-2 rounded-lg z-50" v-if="isOtherUserDropdown" @click.stop>
                 <li>
-                  <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="closeOtherUserDropdown();chatClear(selectedUser.id)" v-if="!chatClearLoading">
+                  <button type="button" class="cursor-pointer decoration-0 block w-full px-5 py-3 font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" @click="chatClear()" v-if="!chatClearLoading">
                     Clear Chat
                   </button>
                   <button type="button" class="cursor-pointer decoration-0 flex justify-center items-center w-full px-5 min-h-[48px] max-h-[48px] font-medium text-start bg-transparent duration-500 hover:bg-gray-300 rounded-lg" v-if="chatClearLoading">
@@ -111,15 +111,10 @@
 
           <!-- Chat messages -->
           <div class="w-full h-[calc(100vh-325px)] bg-gray-200 p-3 scrollbar overflow-y-auto">
-            <div
-                v-for="(message, index) in messages"
-                :key="message.id"
-                class="flex mb-3"
-                :class="message.sender_id == profileData.id ? 'justify-end items-start' : 'justify-start items-start'"
-            >
+            <div v-for="(message) in messages" :key="message.id" class="flex mb-3" :class="message.sender_id === profileData.id ? 'justify-end items-start' : 'justify-start items-start'">
 
               <!-- Received Message -->
-              <template v-if="message.sender_id != profileData.id">
+              <template v-if="message.sender_id !== profileData.id">
                 <div class="min-w-[50px] min-h-[50px] inline-flex bg-white justify-center font-medium items-center rounded-full me-3 shadow-lg">
                   {{ getInitials(message.sender_id) }}
                 </div>
@@ -135,33 +130,6 @@
 
               <!-- Sent Message -->
               <template v-else>
-                <div class="relative me-3">
-                  <button
-                      type="button"
-                      class="size-[45px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300"
-                      @click="openRightChatDropdown(index)"
-                  >
-                    <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
-                    </svg>
-                  </button>
-                  <ul
-                      class="absolute z-20 p-2 rounded-xl top-auto start-0 w-[150px] bg-white drop-shadow-xl mt-1"
-                      v-if="isRightChatDropdown === index"
-                      @click.stop
-                  >
-                    <li>
-                      <button type="button" class="block w-full py-2 px-4 hover:bg-gray-300" @click="editMessage(message)">
-                        Edit
-                      </button>
-                    </li>
-                    <li>
-                      <button type="button" class="block w-full py-2 px-4 hover:bg-gray-300" @click="deleteMessage(message.id)">
-                        Delete
-                      </button>
-                    </li>
-                  </ul>
-                </div>
                 <div class="bg-blue-600 shadow-lg overflow-hidden text-white rounded-lg min-w-[250px]">
                   <div class="w-full px-4 py-2 text-[16px] font-medium">
                     {{ message.content }}
@@ -486,31 +454,11 @@ export default {
       }
     },
 
-    /*** Open left chat user dropdown ***/
-    openLeftChatDropdown() {
-      this.isLeftChatDropdown = true;
-    },
-
-    /*** Close left chat user dropdown ***/
-    closeLeftChatDropdown() {
-      this.isLeftChatDropdown = false;
-    },
-
     /*** Handle left chat dropdown close ***/
     handleLeftChatDropdownClose() {
       if (!event.target.closest("#leftChatDropdown")) {
         this.isLeftChatDropdown = false;
       }
-    },
-
-    /*** Open right chat user dropdown ***/
-    openRightChatDropdown() {
-      this.isRightChatDropdown = true;
-    },
-
-    /*** Close right chat user dropdown ***/
-    closeRightChatDropdown() {
-      this.isRightChatDropdown = false;
     },
 
     /*** Handle right chat dropdown close ***/
@@ -540,12 +488,6 @@ export default {
     /*** Close change password modal ***/
     closeChangePasswordModal() {
       this.isChangePasswordModal = false;
-    },
-
-    /*** Open change password modal ***/
-    openChatDeleteModal(id) {
-      this.id = id;
-      this.isChatDeleteModal = true;
     },
 
     /*** Close change password modal ***/
@@ -697,11 +639,12 @@ export default {
     },
 
     /*** Chat clear api implementation ***/
-    async chatClear(id) {
+    async chatClear() {
       this.chatClearLoading = true;
       try {
-        const response = await axios.delete(`${apiRoute.chat}/clear/${id}`, { headers: apiService.authHeaderContent() });
+        const response = await axios.delete(`${apiRoute.chat}/clear`, { headers: apiService.authHeaderContent() });
         this.messages = [];
+        this.closeOtherUserDropdown();
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
@@ -747,9 +690,10 @@ export default {
       }, 500);
     },
 
+    /*** get initials ***/
     getInitials(userId) {
-      if (userId == this.profileData.id) return "MB";
-      return "AJ";
+      if (userId === this.profileData.id) return this.shortName(this.profileData.name);
+      return this.selectedUserInitials;
     },
 
   }
