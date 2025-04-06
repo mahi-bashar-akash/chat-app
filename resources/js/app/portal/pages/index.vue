@@ -111,22 +111,20 @@
 
           <!-- Chat messages -->
           <div class="w-full h-[calc(100vh-325px)] bg-gray-200 p-3 scrollbar">
-            <div v-for="message in messages" :key="message.id" :class="{'flex justify-end items-start mb-3': message.sender_id === profileData.id, 'flex justify-start items-start mb-3': message.sender_id !== profileData.id}">
-              <div v-if="message.sender_id !== profileData.id" class="min-w-[50px] min-h-[50px] inline-flex justify-center font-medium items-center bg-white rounded-full me-3 shadow-lg">
-                {{ shortName(selectedUser.name) }}
+
+            <div class="flex justify-start items-start mb-3">
+              <div class="min-w-[50px] min-h-[50px] inline-flex bg-white justify-center font-medium items-center rounded-full me-3 shadow-lg">
+                AJ
               </div>
-              <div v-else class="min-w-[50px] min-h-[50px] inline-flex justify-center font-medium items-center bg-blue-600 text-white rounded-full ms-3 shadow-lg">
-                {{ shortName(profileData?.name) }}
-              </div>
-              <div :class="{'bg-white shadow-lg overflow-hidden rounded-lg': message.sender_id !== profileData.id, 'bg-blue-600 text-white shadow-lg overflow-hidden rounded-lg': message.sender_id === profileData.id}">
+              <div class="bg-white shadow-lg overflow-hidden rounded-lg min-w-[250px]">
                 <div class="w-full px-4 py-2 text-[16px]">
-                  {{ message.content }}
+                  Hello World
                 </div>
-                <div :class="{'text-[12px] text-end bg-gray-100 px-4 py-2 shadow-inner': message.sender_id !== profileData.id, 'text-[13px] text-end bg-blue-700 text-white px-4 py-2 shadow-inner': message.sender_id === profileData.id}">
-                  {{ formatDateTime(message.created_at) }}
+                <div class="text-[12px] text-end bg-gray-100 px-4 py-2 shadow-inner">
+                  01:05 AM
                 </div>
               </div>
-              <div v-if="message.sender_id !== profileData.id" class="relative ms-3" id="leftChatDropdown">
+              <div class="relative ms-3" id="leftChatDropdown">
                 <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openLeftChatDropdown()">
                   <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
                     <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
@@ -134,13 +132,16 @@
                 </button>
                 <ul class="absolute z-20 p-2 rounded-xl top-auto end-0 w-[150px] bg-white drop-shadow-xl" v-if="isLeftChatDropdown" @click.stop>
                   <li>
-                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeLeftChatDropdown();openChatDeleteModal(message.id)">
+                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeLeftChatDropdown();openChatDeleteModal()">
                       Delete
                     </button>
                   </li>
                 </ul>
               </div>
-              <div v-else class="relative ms-3" id="rightChatDropdown">
+            </div>
+
+            <div class="flex justify-end items-start mb-3">
+              <div class="relative me-3" id="rightChatDropdown">
                 <button type="button" class="size-[35px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openRightChatDropdown()">
                   <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
                     <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
@@ -153,13 +154,25 @@
                     </button>
                   </li>
                   <li>
-                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown();openChatDeleteModal(message.id)">
+                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown();openChatDeleteModal()">
                       Delete
                     </button>
                   </li>
                 </ul>
               </div>
+              <div class="bg-blue-600 shadow-lg overflow-hidden text-white rounded-lg min-w-[250px]">
+                <div class="w-full px-4 py-2 text-[16px]">
+                  Hello World
+                </div>
+                <div class="text-[12px] text-end bg-blue-500 text-white px-4 py-2 shadow-inner">
+                  01:05 AM
+                </div>
+              </div>
+              <div class="min-w-[50px] min-h-[50px] inline-flex justify-center bg-blue-600 text-white font-medium items-center rounded-full ms-3 shadow-lg">
+                MB
+              </div>
             </div>
+            
           </div>
 
           <!-- Another User text submit part -->
@@ -385,7 +398,6 @@ export default {
     window.addEventListener("click", this.handleOtherUserDropdownClose);
     window.addEventListener("click", this.handleLeftChatDropdownClose);
     window.addEventListener("click", this.handleRightChatDropdownClose);
-
     this.getUserDetails();
     this.userList();
     this.chatList();
@@ -398,93 +410,113 @@ export default {
     window.removeEventListener("click", this.handleRightChatDropdownClose);
   },
   methods: {
+
     /*** Open user dropdown ***/
     openUserDropdown() {
       this.isUserDropdown = true;
     },
+
     /*** Close user dropdown ***/
     closeUserDropdown() {
       this.isUserDropdown = false;
     },
+
     /*** Handle user dropdown close ***/
     handleUserDropdownClose() {
       if (!event.target.closest("#userDropdown")) {
         this.isUserDropdown = false;
       }
     },
+
     /*** Open other user dropdown ***/
     openOtherUserDropdown() {
       this.isOtherUserDropdown = true;
     },
+
     /*** Close other user dropdown ***/
     closeOtherUserDropdown() {
       this.isOtherUserDropdown = false;
     },
+
     /*** Handle other user dropdown close ***/
     handleOtherUserDropdownClose() {
       if (!event.target.closest("#otherUserDropdown")) {
         this.isOtherUserDropdown = false;
       }
     },
+
     /*** Open left chat user dropdown ***/
     openLeftChatDropdown() {
       this.isLeftChatDropdown = true;
     },
+
     /*** Close left chat user dropdown ***/
     closeLeftChatDropdown() {
       this.isLeftChatDropdown = false;
     },
+
     /*** Handle left chat dropdown close ***/
     handleLeftChatDropdownClose() {
       if (!event.target.closest("#leftChatDropdown")) {
         this.isLeftChatDropdown = false;
       }
     },
+
     /*** Open right chat user dropdown ***/
     openRightChatDropdown() {
       this.isRightChatDropdown = true;
     },
+
     /*** Close right chat user dropdown ***/
     closeRightChatDropdown() {
       this.isRightChatDropdown = false;
     },
+
     /*** Handle right chat dropdown close ***/
     handleRightChatDropdownClose() {
       if (!event.target.closest("#rightChatDropdown")) {
         this.isRightChatDropdown = false;
       }
     },
+
     /*** Open edit profile modal ***/
     openEditProfileModal() {
       this.isEditProfileModal = true;
     },
+
     /*** Close edit profile modal ***/
     closeEditProfileModal() {
       this.isEditProfileModal = false;
     },
+
     /*** Open change password modal ***/
     openChangePasswordModal() {
       this.isChangePasswordModal = true;
     },
+
     /*** Close change password modal ***/
     closeChangePasswordModal() {
       this.isChangePasswordModal = false;
     },
+
     /*** Open change password modal ***/
     openChatDeleteModal(id) {
       this.id = id;
       this.isChatDeleteModal = true;
     },
+
     /*** Close change password modal ***/
     closeChatDeleteModal() {
       this.isChatDeleteModal = false;
     },
+
     /*** Short name ***/
     shortName(fullName) {
       if (!fullName) return "";
       const words = fullName.trim().split(" ");
       return words.slice(0, 2).map(word => word[0]).join("").toUpperCase();
     },
+
     /*** Details api implementation ***/
     async getUserDetails() {
       this.loading = true;
@@ -500,6 +532,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** Change details api implementation ***/
     async editProfile() {
       this.loading = true;
@@ -513,6 +546,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** Change password api implementation ***/
     async changePassword() {
       this.loading = true;
@@ -526,6 +560,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** logout api implementation ***/
     async logout() {
       this.loading = true;
@@ -540,6 +575,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** Chat list api implementation ***/
     async chatList() {
       this.loading = true;
@@ -552,6 +588,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** manage chat api ***/
     manageChat() {
       if (this.formData.id) {
@@ -560,6 +597,7 @@ export default {
         this.chatStore();
       }
     },
+
     /*** Chat store api implementation ***/
     async chatStore() {
       this.loading = true;
@@ -573,6 +611,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** Chat show api implementation ***/
     async chatShow() {
       this.loading = true;
@@ -585,6 +624,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** Chat update api implementation ***/
     async chatUpdate() {
       this.loading = true;
@@ -598,6 +638,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** Chat delete api implementation ***/
     async chatDelete() {
       this.loading = true;
@@ -611,6 +652,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** Chat clear api implementation ***/
     async chatClear(id) {
       this.loading = true;
@@ -623,6 +665,7 @@ export default {
         this.loading = false;
       }
     },
+
     /*** User list api implementation ***/
     async userList() {
       this.loading = true;
@@ -652,7 +695,8 @@ export default {
         hour: '2-digit', minute: '2-digit', hour12: true
       };
       return new Date(dateTime).toLocaleString('en-GB', options);
-    }
+    },
+
   }
 }
 </script>
