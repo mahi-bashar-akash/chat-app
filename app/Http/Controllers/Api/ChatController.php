@@ -15,9 +15,21 @@ class ChatController extends BaseController
 
     use AuthorizesRequests, ValidatesRequests;
 
-    public function list()
+    public function list(Request $request)
     {
-        $messages = Message::all();
+        $userId = $request->user()->id;
+        $chatWithId = $request->query('chat_with');
+
+        $messages = Message::where(function ($query) use ($userId, $chatWithId) {
+            $query->where('sender_id', $userId)
+                  ->where('receiver_id', $chatWithId);
+        })->orWhere(function ($query) use ($userId, $chatWithId) {
+            $query->where('sender_id', $chatWithId)
+                  ->where('receiver_id', $userId);
+        })
+        ->orderBy('created_at', 'asc')
+        ->get();
+
         return response()->json(['messages' => $messages], 200);
     }
 

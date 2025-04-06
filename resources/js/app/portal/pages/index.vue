@@ -110,72 +110,75 @@
           </div>
 
           <!-- Chat messages -->
-          <div class="w-full h-[calc(100vh-325px)] bg-gray-200 p-3 scrollbar">
+          <div class="w-full h-[calc(100vh-325px)] bg-gray-200 p-3 scrollbar overflow-y-auto">
+            <div
+                v-for="(message, index) in messages"
+                :key="message.id"
+                class="flex mb-3"
+                :class="message.sender_id == profileData.id ? 'justify-end items-start' : 'justify-start items-start'"
+            >
 
-            <div class="flex justify-start items-start mb-3">
-              <div class="min-w-[50px] min-h-[50px] inline-flex bg-white justify-center font-medium items-center rounded-full me-3 shadow-lg">
-                AJ
-              </div>
-              <div class="bg-white shadow-lg overflow-hidden rounded-lg min-w-[250px]">
-                <div class="w-full px-4 py-2 text-[16px] font-medium">
-                  Hello World
+              <!-- Received Message -->
+              <template v-if="message.sender_id != profileData.id">
+                <div class="min-w-[50px] min-h-[50px] inline-flex bg-white justify-center font-medium items-center rounded-full me-3 shadow-lg">
+                  {{ getInitials(message.sender_id) }}
                 </div>
-                <div class="text-[12px] text-end bg-gray-100 px-4 py-2 shadow-inner">
-                  01:05 AM
+                <div class="bg-white shadow-lg overflow-hidden rounded-lg min-w-[250px]">
+                  <div class="w-full px-4 py-2 text-[16px] font-medium">
+                    {{ message.content }}
+                  </div>
+                  <div class="text-[12px] text-end bg-gray-100 px-4 py-2 shadow-inner">
+                    {{ formatTime(message.created_at) }}
+                  </div>
                 </div>
-              </div>
-              <div class="relative ms-3" id="leftChatDropdown">
-                <button type="button" class="size-[45px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openLeftChatDropdown()">
-                  <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
-                  </svg>
-                </button>
-                <ul class="absolute z-20 p-2 rounded-xl top-auto end-0 w-[150px] bg-white drop-shadow-xl mt-1" v-if="isLeftChatDropdown" @click.stop>
-                  <li>
-                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeLeftChatDropdown();openChatDeleteModal()">
-                      Delete
-                    </button>
-                  </li>
-                </ul>
-              </div>
+              </template>
+
+              <!-- Sent Message -->
+              <template v-else>
+                <div class="relative me-3">
+                  <button
+                      type="button"
+                      class="size-[45px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300"
+                      @click="openRightChatDropdown(index)"
+                  >
+                    <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
+                    </svg>
+                  </button>
+                  <ul
+                      class="absolute z-20 p-2 rounded-xl top-auto start-0 w-[150px] bg-white drop-shadow-xl mt-1"
+                      v-if="isRightChatDropdown === index"
+                      @click.stop
+                  >
+                    <li>
+                      <button type="button" class="block w-full py-2 px-4 hover:bg-gray-300" @click="editMessage(message)">
+                        Edit
+                      </button>
+                    </li>
+                    <li>
+                      <button type="button" class="block w-full py-2 px-4 hover:bg-gray-300" @click="deleteMessage(message.id)">
+                        Delete
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+                <div class="bg-blue-600 shadow-lg overflow-hidden text-white rounded-lg min-w-[250px]">
+                  <div class="w-full px-4 py-2 text-[16px] font-medium">
+                    {{ message.content }}
+                  </div>
+                  <div class="text-[12px] text-end bg-blue-500 text-white px-4 py-2 shadow-inner">
+                    {{ formatTime(message.created_at) }}
+                  </div>
+                </div>
+                <div class="min-w-[50px] min-h-[50px] inline-flex justify-center bg-blue-600 text-white font-medium items-center rounded-full ms-3 shadow-lg">
+                  {{ getInitials(profileData.id) }}
+                </div>
+              </template>
+
             </div>
-
-            <div class="flex justify-end items-start mb-3">
-              <div class="relative me-3" id="rightChatDropdown">
-                <button type="button" class="size-[45px] inline-flex justify-center items-center rounded-full bg-transparent duration-500 hover:bg-gray-300" @click="openRightChatDropdown()">
-                  <svg fill="#000000" viewBox="0 0 20 20" class="size-[15px]" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10.001 7.8a2.2 2.2 0 1 0 0 4.402A2.2 2.2 0 0 0 10 7.8zm0-2.6A2.2 2.2 0 1 0 9.999.8a2.2 2.2 0 0 0 .002 4.4zm0 9.6a2.2 2.2 0 1 0 0 4.402 2.2 2.2 0 0 0 0-4.402z"></path>
-                  </svg>
-                </button>
-                <ul class="absolute z-20 p-2 rounded-xl top-auto start-0 w-[150px] bg-white drop-shadow-xl mt-1" v-if="isRightChatDropdown" @click.stop>
-                  <li>
-                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown()">
-                      Edit
-                    </button>
-                  </li>
-                  <li>
-                    <button type="button" class="block w-full py-2 px-4 outline-0 bg-transparent duration-500 rounded-lg text-start hover:bg-gray-300" @click="closeRightChatDropdown();openChatDeleteModal()">
-                      Delete
-                    </button>
-                  </li>
-                </ul>
-              </div>
-              <div class="bg-blue-600 shadow-lg overflow-hidden text-white rounded-lg min-w-[250px]">
-                <div class="w-full px-4 py-2 text-[16px] font-medium">
-                  Hello World
-                </div>
-                <div class="text-[12px] text-end bg-blue-500 text-white px-4 py-2 shadow-inner">
-                  01:07 AM
-                </div>
-              </div>
-              <div class="min-w-[50px] min-h-[50px] inline-flex justify-center bg-blue-600 text-white font-medium items-center rounded-full ms-3 shadow-lg">
-                MB
-              </div>
-            </div>
-
           </div>
 
-          <!-- Another User text submit part -->
+          <!-- User text submit part -->
           <form @submit.prevent="manageChat()" class="p-3 w-full flex justify-between items-center">
             <input type="text" name="message" v-model="formData.content" placeholder="Typing Here ..." class="w-full min-h-[50px] px-5 outline-0 bg-gray-200 border-0 block rounded-lg" autocomplete="off" />
             <button type="submit" class="size-[50px] min-w-[50px] min-h-[50px] w-[50px] h-[50px] outline-0 border-0 bg-gray-200 inline-flex justify-center items-center group rounded-full ms-3">
@@ -439,7 +442,6 @@ export default {
     window.addEventListener("click", this.handleRightChatDropdownClose);
     this.getUserDetails();
     this.userList();
-    this.chatList();
   },
   beforeUnmount() {
     /*** Before Unmounted properties ***/
@@ -621,7 +623,7 @@ export default {
     async chatList() {
       this.loading = true;
       try {
-        const response = await axios.get(`${apiRoute.chat}/list`, { headers: apiService.authHeaderContent() });
+        const response = await axios.get(`${apiRoute.chat}/list`, { headers: apiService.authHeaderContent(), params: { chat_with: this.formData.receiver_id } });
         this.messages = response.data.messages;
       } catch (error) {
         console.log(error.response.data.errors);
@@ -730,12 +732,11 @@ export default {
     },
 
     /*** Format date time ***/
-    formatDateTime(dateTime) {
+    formatTime(Time) {
       const options = {
-        day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit', hour12: true
       };
-      return new Date(dateTime).toLocaleString('en-GB', options);
+      return new Date(Time).toLocaleString('en-GB', options);
     },
 
     /*** Search data ***/
@@ -744,6 +745,11 @@ export default {
       this.searchTimeout = setTimeout(() => {
         this.userList();
       }, 500);
+    },
+
+    getInitials(userId) {
+      if (userId == this.profileData.id) return "MB";
+      return "AJ";
     },
 
   }
