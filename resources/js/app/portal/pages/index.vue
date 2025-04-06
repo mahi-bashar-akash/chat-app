@@ -596,6 +596,7 @@ export default {
         const response = await axios.post(`${apiRoute.chat}/store`, this.formData, { headers: apiService.authHeaderContent() });
         this.messages.push(response.data.message);
         this.formData.content = '';
+        await this.chatList();
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
@@ -610,6 +611,7 @@ export default {
         const response = await axios.patch(`${apiRoute.chat}/update/${this.id}`, this.formData, { headers: apiService.authHeaderContent() });
         const index = this.messages.findIndex(message => message.id === response.data.message.id);
         this.messages.splice(index, 1, response.data.message);
+        await this.chatList();
       } catch (error) {
         console.log(error.response.data.errors);
       } finally {
