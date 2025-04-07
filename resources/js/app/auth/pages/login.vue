@@ -90,7 +90,6 @@ export default {
         localStorage.setItem('token', response.data.token)
         this.$router.push({name:'index'});
       } catch (error) {
-        console.log(error)
         if(error.response.data.error) {
           this.credentialsError = error.response.data.error
         } else {
