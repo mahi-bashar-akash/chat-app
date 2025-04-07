@@ -36,7 +36,7 @@ class AuthController extends BaseController
                 'token' => $token,
             ], 200);
         }
-        return response()->json(['error' => 'Unauthorized'], 401);
+        return response()->json(['error' => 'Invalid credentials'], 401);
     }
 
     public function registration(Request $request)

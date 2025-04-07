@@ -1,6 +1,11 @@
 <template>
 
   <form @submit.prevent="login()" class="w-full">
+    <div class="mb-3">
+      <div class="bg-rose-200 text-rose-700 font-medium min-h-[45px] max-h-[45px] inline-flex justify-center w-full items-center rounded-lg text-center" v-if="credentialsError">
+        {{credentialsError}}
+      </div>
+    </div>
     <div class="mb-2 block w-full">
       <label for="user-email" class="block mb-1 w-full font-medium"> Email </label>
       <input id="user-email" type="email" name="email" v-model="formData.email" placeholder="Enter your email" class="w-full min-h-[45px] duration-500 rounded-lg border border-gray-300 block px-5 focus-within:border-blue-600 outline-0" autocomplete="off" />
@@ -55,6 +60,7 @@ export default {
   data() {
     return {
       loading: false,
+      credentialsError: null,
       error: {},
       formData: {
         email: '',
@@ -76,13 +82,20 @@ export default {
     /*** login api implementation ***/
     async login() {
       this.loading = true;
+      this.error = {};
+      this.credentialsError = '';
       try {
         const response = await axios.post(apiRoute.login, this.formData, {headers: apiService.authHeaderContent()});
         localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('token', response.data.token)
         this.$router.push({name:'index'});
       } catch (error) {
-        this.error = error.response.data.errors;
+        console.log(error)
+        if(error.response.data.error) {
+          this.credentialsError = error.response.data.error
+        } else {
+          this.error = error.response.data.errors;
+        }
       } finally {
         this.loading = false;
       }
