@@ -44,7 +44,9 @@
 
         <template v-for="each in showList" v-if="userData.length > 0">
           <button type="button" class="w-full flex justify-start items-center bg-transparent duration-500 hover:bg-gray-200 p-3 rounded-lg" @click="selectUser(each)">
-          <span class="min-w-[50px] min-h-[50px] size-[50px] inline-flex justify-center rounded-full items-center bg-gray-600 text-white">
+          <span class="min-w-[50px] relative min-h-[50px] size-[50px] inline-flex justify-center rounded-full items-center bg-gray-600 text-white">
+            <span class="-top-[1px] -start-[1px] size-[20px] bg-green-500 rounded-full absolute hidden"></span>
+            <span class="-top-[1px] -start-[1px] size-[20px] bg-gray-300 rounded-full absolute hidden"></span>
             {{shortName(each.name)}}
           </span>
             <span class="ms-2 block">
