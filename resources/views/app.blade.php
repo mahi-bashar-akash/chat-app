@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="shortcut icon" href="{{asset('/images/logo-icon.svg')}}" type="image/x-icon">
     <link rel="apple-touch-icon" href="{{asset('/images/logo-icon.svg')}}">
-    <title> Real Estate Agency </title>
+    <title> Chat App </title>
     @vite('resources/css/app.css')
     @vite('resources/js/app/app.js')
 </head>
