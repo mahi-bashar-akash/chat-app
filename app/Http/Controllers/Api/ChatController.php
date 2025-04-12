@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Message;
+use App\Events\MessageSend;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -42,11 +43,12 @@ class ChatController extends BaseController
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-        $message = new Message();
-        $message->sender_id = Auth::id();
-        $message->receiver_id = $request->receiver_id;
-        $message->content = $request->content;
-        $message->save();
+        $message = Message::create([
+            'sender_id' => Auth::id(),
+            'receiver_id' => $request->receiver_id,
+            'content' => $request->content,
+        ]);
+        event(new MessageSend($message));
         return response()->json(['message' => $message], 201);
     }
 

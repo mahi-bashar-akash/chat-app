@@ -342,9 +342,12 @@
 </template>
 
 <script>
+
 import axios from "axios";
 import apiRoute from "../../api/apiRoute.js";
 import apiService from "../../api/apiService.js";
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 
 export default {
   computed: {
@@ -411,6 +414,7 @@ export default {
     window.addEventListener("click", this.handleLeftChatDropdownClose);
     window.addEventListener("click", this.handleRightChatDropdownClose);
     this.getUserDetails();
+    this.initializeLaravelEcho();
     this.userList();
   },
   beforeUnmount() {
@@ -421,6 +425,24 @@ export default {
     window.removeEventListener("click", this.handleRightChatDropdownClose);
   },
   methods: {
+
+    // initialize laravel echo
+    initializeLaravelEcho() {
+        window.pusher = Pusher;
+        window.Echo = new Echo({
+            broadcaster: "pusher",
+            key: "cbd76c01a82c566f88f9",
+            cluster: "ap2",
+            forceTls: true,
+            authEndpoint: "/broadcasting/auth",
+            auth: {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            },
+        });
+        window.Echo.private(`chat.${this.profileData?.id}`).listen("MessageSent", (event) => {this.messages.push(event.message);});
+    },
 
     /*** Open user dropdown ***/
     openUserDropdown() {
