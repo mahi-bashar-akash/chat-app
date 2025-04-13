@@ -440,6 +440,7 @@ export default {
                     'Content-Type': 'application/json; charset=utf-8',
                     'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
                 },
+                method: "GET",
             },
         });
         window.Echo.private(`chat.${this.profileData?.id}`).listen("MessageSent", (event) => {this.messages.push(event.message);});
@@ -695,7 +696,6 @@ export default {
       this.selectedUser = user;
       this.selectedUserInitials = this.shortName(user.name);
       this.formData.receiver_id = user.id;
-      this.chatList();
     },
 
     /*** Format date time ***/

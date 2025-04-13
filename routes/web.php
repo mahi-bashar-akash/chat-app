@@ -17,3 +17,5 @@ use \App\Http\Controllers\AppController;
 Route::get('{any}', [AppController::class, 'app'])->where('any', '.*')->name('lvs.app.any');
 Route::get('/auth/{any}', [AppController::class, 'app'])->where('any', '.*')->name('lvs.app.auth.any');
 Route::get('/auth', function () { return redirect()->route('lvs.app.auth', 'login'); });
+
+Route::post('/broadcasting/auth', function () { return Auth::user(); })->middleware('auth:sanctum');
