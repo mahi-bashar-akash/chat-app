@@ -39,14 +39,23 @@ class MessageSend implements ShouldBroadcast
     }
 
     /***
+        Customize the broadcast name.
+    ******
+        @return string
+    ***/
+    public function broadcastAs()
+    {
+        return 'MessageSend';
+    }
+
+    /***
         Get the data to broadcast.
     ******
         @return array
-     ***/
+    ***/
     public function broadcastWith()
     {
-        return [
-            'message' => $this->message,
-        ];
+        return ['message' => $this->message];
     }
+
 }

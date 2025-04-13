@@ -413,9 +413,10 @@ export default {
     window.addEventListener("click", this.handleOtherUserDropdownClose);
     window.addEventListener("click", this.handleLeftChatDropdownClose);
     window.addEventListener("click", this.handleRightChatDropdownClose);
-    this.getUserDetails();
-    this.initializeLaravelEcho();
-    this.userList();
+    this.getUserDetails().then(() => {
+        this.initializeLaravelEcho();
+        this.userList();
+    });
   },
   beforeUnmount() {
     /*** Before Unmounted properties ***/
@@ -440,10 +441,16 @@ export default {
                     'Content-Type': 'application/json; charset=utf-8',
                     'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
                 },
-                method: "GET",
             },
         });
-        window.Echo.private(`chat.${this.profileData?.id}`).listen("MessageSent", (event) => {this.messages.push(event.message);});
+        const userId = this.profileData?.id;
+        if(userId) {
+            window.Echo.private(`chat.${userId}`).listen("MessageSend", (event) => {
+                this.messages.push(event.message);
+            })
+        } else {
+            console.log("User Id is undefined. Echo cannot subscribe to the private channel");
+        }
     },
 
     /*** Open user dropdown ***/
