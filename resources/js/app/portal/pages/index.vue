@@ -543,9 +543,14 @@ export default {
         this.profileData = response.data.user;
         this.profileParam = JSON.parse(JSON.stringify(response.data.user));
         this.formData.sender_id = response.data.user.id;
-        this.closeEditProfileModal();
       } catch (error) {
-        this.error = error.response.data.errors;
+        if(error.message === 'Unauthorized') {
+            this.localStorage.removeItem("pusherTransportTLS");
+            this.localStorage.removeItem("token");
+            this.localStorage.removeItem("user");
+        } else if(error.response.data.errors) {
+            this.error = error.response.data.errors;
+        }
       } finally {
         this.loading = false;
       }
