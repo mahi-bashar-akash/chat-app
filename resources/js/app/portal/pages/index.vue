@@ -437,7 +437,8 @@ export default {
             authEndpoint: "/broadcasting/auth",
             auth: {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
                 },
             },
         });
