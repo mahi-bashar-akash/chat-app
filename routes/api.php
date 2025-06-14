@@ -39,8 +39,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('chat')->group(function () {
         Route::get('list', [ChatController::class, 'list'])->name('API.CHAT.LIST');
         Route::post('store', [ChatController::class, 'store'])->name('API.CHAT.STORE');
-        Route::put('show/{id}', [ChatController::class, 'show'])->name('API.CHAT.SHOW');
-        Route::patch('update/{id}', [ChatController::class, 'update'])->name('API.CHAT.UPDATE');
         Route::delete('delete/{id}', [ChatController::class, 'delete'])->name('API.CHAT.DELETE');
         Route::delete('clear', [ChatController::class, 'clear'])->name('API.CHAT.CLEAR');
     });

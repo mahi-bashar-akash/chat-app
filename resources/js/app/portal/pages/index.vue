@@ -346,8 +346,8 @@
 import axios from "axios";
 import apiRoute from "../../api/apiRoute.js";
 import apiService from "../../api/apiService.js";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 
 export default {
   computed: {
@@ -429,27 +429,28 @@ export default {
 
     // initialize laravel echo
     initializeLaravelEcho() {
-        window.pusher = Pusher;
-        window.Echo = new Echo({
-            broadcaster: "pusher",
-            key: "cbd76c01a82c566f88f9",
-            cluster: "ap2",
-            forceTls: true,
-            authEndpoint: "/broadcasting/auth",
+
+        this.echo = new Echo({
+            broadcaster: 'pusher',
+            key: 'cbd76c01a82c566f88f9',
+            cluster: 'ap2',
+            forceTLS: true,
+            authEndpoint: '/broadcasting/auth',
             auth: {
                 headers: {
-                    'Content-Type': 'application/json; charset=utf-8',
-                    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-                },
-            },
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            }
         });
+
         const userId = this.profileData?.id;
-        if(userId) {
-            window.Echo.private(`chat.${userId}`).listen("MessageSend", (event) => {
-                this.messages.push(event.message);
-            })
+        if (userId) {
+            this.echo.private(`chat.${userId}`)
+                .listen('MessageSend', (event) => {
+                    this.messages.push(event.message);
+                });
         } else {
-            console.log("User Id is undefined. Echo cannot subscribe to the private channel");
+            console.warn("User ID not found for Echo subscription.");
         }
     },
 

@@ -21,15 +21,19 @@ class ChatController extends BaseController
         $userId = $request->user()->id;
         $chatWithId = $request->query('chat_with');
 
+        if (!$chatWithId) {
+            return response()->json(['error' => 'chat_with query parameter is required'], 422);
+        }
+
         $messages = Message::where(function ($query) use ($userId, $chatWithId) {
             $query->where('sender_id', $userId)
-                  ->where('receiver_id', $chatWithId);
+                ->where('receiver_id', $chatWithId);
         })->orWhere(function ($query) use ($userId, $chatWithId) {
             $query->where('sender_id', $chatWithId)
-                  ->where('receiver_id', $userId);
+                ->where('receiver_id', $userId);
         })
-        ->orderBy('created_at', 'asc')
-        ->get();
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         return response()->json(['messages' => $messages], 200);
     }
@@ -37,61 +41,51 @@ class ChatController extends BaseController
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'receiver_id' => 'required',
+            'receiver_id' => 'required|exists:users,id',
             'content' => 'required|string',
         ]);
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
+
         $message = Message::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $request->receiver_id,
             'content' => $request->content,
         ]);
+
         event(new MessageSend($message));
+
         return response()->json(['message' => $message], 201);
-    }
-
-    public function show($id)
-    {
-        $message = Message::find($id);
-        if (!$message) {
-            return response()->json(['error' => 'Message not found'], 404);
-        }
-        return response()->json(['message' => $message], 200);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'content' => 'required|string',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-        $message = Message::find($id);
-        if (!$message) {
-            return response()->json(['error' => 'Message not found'], 404);
-        }
-        $message->content = $request->content;
-        $message->save();
-        return response()->json(['message' => $message], 200);
     }
 
     public function delete($id)
     {
-        $message = Message::find($id);
-        if (!$message) {
+        try {
+            $message = Message::findOrFail($id);
+
+            if ($message->sender_id !== Auth::id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            $message->delete();
+
+            return response()->json(['message' => 'Message deleted successfully'], 200);
+        } catch (\Exception $e) {
             return response()->json(['error' => 'Message not found'], 404);
         }
-        $message->delete();
-        return response()->json(['message' => 'Message deleted successfully'], 200);
     }
 
     public function clear()
     {
-        Message::truncate();
-        return response()->json(['message' => 'All messages cleared successfully'], 200);
+        $userId = Auth::id();
+
+        Message::where('sender_id', $userId)
+            ->orWhere('receiver_id', $userId)
+            ->delete();
+
+        return response()->json(['message' => 'Your chat history cleared successfully'], 200);
     }
 
 }
