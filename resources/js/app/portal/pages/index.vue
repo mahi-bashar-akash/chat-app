@@ -140,9 +140,9 @@
 
                     </div>
 
-                    <!-- Chat messages -->
+                    <!-- Chats -->
                     <div class="w-full h-[calc(100vh-325px)] bg-gray-200 p-3 scrollbar overflow-y-auto">
-                        <div v-for="(message) in messages" :key="message.id" class="flex mb-3"
+                        <div v-for="(message) in chats" :key="message.id" class="flex mb-3"
                              :class="message.sender_id == profileData.id ? 'justify-end items-start' : 'justify-start items-start'">
 
                             <!-- Received Message -->
@@ -153,7 +153,7 @@
                                 </div>
                                 <div class="bg-white shadow-lg overflow-hidden rounded-lg min-w-[250px]">
                                     <div class="w-full px-4 py-2 text-[16px] font-medium">
-                                        {{ message.content }}
+                                        {{ message.message }}
                                     </div>
                                     <div class="text-[12px] text-end bg-gray-100 px-4 py-2 shadow-inner">
                                         {{ formatTime(message.created_at) }}
@@ -165,7 +165,7 @@
                             <template v-else>
                                 <div class="bg-blue-600 shadow-lg overflow-hidden text-white rounded-lg min-w-[250px]">
                                     <div class="w-full px-4 py-2 text-[16px] font-medium">
-                                        {{ message.content }}
+                                        {{ message.message }}
                                     </div>
                                     <div class="text-[12px] text-end bg-blue-500 text-white px-4 py-2 shadow-inner">
                                         {{ formatTime(message.created_at) }}
@@ -182,7 +182,7 @@
 
                     <!-- User text submit part -->
                     <form @submit.prevent="manageChat()" class="p-3 w-full flex justify-between items-center">
-                        <input type="text" name="message" v-model="formData.content" placeholder="Typing Here ..."
+                        <input type="text" name="message" v-model="formData.message" placeholder="Typing Here ..."
                                class="w-full min-h-[50px] px-5 outline-0 bg-gray-200 border-0 block rounded-lg"
                                autocomplete="off"/>
                         <button type="submit"
@@ -202,7 +202,7 @@
             <template v-else>
                 <div class="w-full h-[calc(100vh-175px)] flex justify-center items-center text-center flex-col">
                     <div class="text-[19px] font-bold mb-1">
-                        No chat content
+                        No chat message
                     </div>
                     <div class="text-[16px] font-medium">
                         Available for now
@@ -503,10 +503,10 @@ export default {
             formData: {
                 sender_id: '',
                 receiver_id: '',
-                content: '',
+                message: '',
             },
             userData: [],
-            messages: [],
+            chats: [],
             selectedUser: {},
             selectedUserInitials: '',
             profileData: null,
@@ -519,8 +519,8 @@ export default {
         window.addEventListener("click", this.handleOtherUserDropdownClose);
         window.addEventListener("click", this.handleLeftChatDropdownClose);
         window.addEventListener("click", this.handleRightChatDropdownClose);
-        await this.getUserDetails();
         this.subscribeToPrivateChannel();
+        await this.getUserDetails();
         await this.userList();
         await this.chatList();
     },
@@ -530,6 +530,14 @@ export default {
         window.removeEventListener("click", this.handleOtherUserDropdownClose);
         window.removeEventListener("click", this.handleLeftChatDropdownClose);
         window.removeEventListener("click", this.handleRightChatDropdownClose);
+    },
+    watch: {
+        'formData.receiver_id': {
+            immediate: true,
+            handler(newVal) {
+                if (newVal) this.chatList();
+            }
+        }
     },
     methods: {
 
@@ -625,7 +633,7 @@ export default {
                 this.formData.sender_id = response.data.user.id;
                 this.subscribeToPrivateChannel();
             } catch (error) {
-                if (error.message === 'Unauthorized') {
+                if (error.chat === 'Unauthorized') {
                     localStorage.removeItem("pusherTransportTLS");
                     localStorage.removeItem("token");
                     localStorage.removeItem("user");
@@ -651,26 +659,19 @@ export default {
                     authEndpoint: '/broadcasting/auth',
                     auth: {
                         headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`
-                        }
-                    }
+                            Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        },
+                    },
                 });
             }
             if (this.echoChannel) {
-                window.Echo.leave(`private-messages.${this.profileData.id}`);
+                window.Echo.leave(`private-chats.${this.profileData.id}`);
             }
-            this.echoChannel = window.Echo.private(`messages.${this.profileData.id}`)
-                .listen('.MessageSend', (e) => {
-                    if (
-                        this.selectedUser &&
-                        (
-                            e.message.sender_id === this.selectedUser.id ||
-                            e.message.receiver_id === this.selectedUser.id
-                        )
-                    ) {
-                        this.messages.push(e.message);
-                    }
-                });
+            this.echoChannel = window.Echo.private(`chats.${this.profileData.id}`).listen('.MessageSent', (e) => {
+                if (this.selectedUser && (e.chat.sender_id === this.selectedUser.id || e.chat.receiver_id === this.selectedUser.id)) {
+                    this.chats.push(e.chat);
+                }
+            });
         },
 
         /*** Change details api implementation ***/
@@ -729,9 +730,9 @@ export default {
             try {
                 const response = await axios.get(`${apiRoute.chat}/list`, {
                     headers: apiService.authHeaderContent(),
-                    params: {chat_with: this.formData.receiver_id}
+                    params: {chat: this.formData.receiver_id}
                 });
-                this.messages = response.data.messages;
+                this.chats = response.data.chats;
             } catch (error) {
                 console.log(error.response?.data?.errors);
             } finally {
@@ -753,7 +754,7 @@ export default {
             this.loading = true;
             try {
                 await axios.post(`${apiRoute.chat}/store`, this.formData, {headers: apiService.authHeaderContent()});
-                this.formData.content = '';
+                this.formData.message = '';
                 await this.chatList();
             } catch (error) {
                 console.log(error.response.data.errors);
@@ -767,8 +768,8 @@ export default {
             this.loading = true;
             try {
                 const response = await axios.patch(`${apiRoute.chat}/update/${this.id}`, this.formData, {headers: apiService.authHeaderContent()});
-                const index = this.messages.findIndex(message => message.id === response.data.message.id);
-                this.messages.splice(index, 1, response.data.message);
+                const index = this.chats.findIndex(chat => chat.id === response.data.chat.id);
+                this.chats.splice(index, 1, response.data.chat);
                 await this.chatList();
             } catch (error) {
                 console.log(error.response.data.errors);
@@ -783,7 +784,7 @@ export default {
             try {
                 const response = await axios.delete(`${apiRoute.chat}/delete/${this.id}`, {headers: apiService.authHeaderContent()});
                 if (response) {
-                    this.messages = this.messages.filter(message => message.id !== this.id);
+                    this.chats = this.chats.filter(chat => chat.id !== this.id);
                     this.closeChatDeleteModal();
                 }
             } catch (error) {
@@ -799,7 +800,7 @@ export default {
             try {
                 const response = await axios.delete(`${apiRoute.chat}/clear`, {headers: apiService.authHeaderContent()});
                 if (response) {
-                    this.messages = [];
+                    this.chats = [];
                     this.closeOtherUserDropdown();
                 }
             } catch (error) {
@@ -828,7 +829,7 @@ export default {
             this.selectedUser = user;
             this.selectedUserInitials = this.shortName(user.name);
             this.formData.receiver_id = user.id;
-            this.messages = [];
+            this.chats = [];
             this.chatList();
         },
 

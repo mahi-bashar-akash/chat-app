@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('sender_id')->constrained('users')->onDelete('cascade');
             $table->string('receiver_id')->constrained('users')->onDelete('cascade');
-            $table->string('content');
+            $table->string('message');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate();
         });
