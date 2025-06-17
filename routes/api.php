@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChatController;
@@ -14,6 +15,8 @@ use App\Http\Controllers\Api\ChatController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->name('API.AUTH.LOGIN');

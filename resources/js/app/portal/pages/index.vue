@@ -1,7 +1,7 @@
 <template>
 
     <div class="w-full flex justify-between items-center px-3 py-3 border-b border-b-gray-300">
-        <div class="text-[25px] font-bold"> Chat App</div>
+        <div class="text-[25px] font-bold"> Chat App </div>
         <div class="relative" id="userDropdown">
             <div class="cursor-pointer size-[55px] bg-gray-700 font-medium text-white rounded-full inline-flex justify-center items-center" @click="openUserDropdown()">
                 {{ shortName(profileData?.name) }}
@@ -301,7 +301,6 @@
 import axios from "axios";
 import apiRoute from "../../api/apiRoute.js";
 import apiService from "../../api/apiService.js";
-import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
 export default {
@@ -350,14 +349,15 @@ export default {
             selectedUser: {},
             selectedUserInitials: '',
             profileData: null,
-            echoChannel: null,
+            pusher: null,
+            channel: null,
         }
     },
     async mounted() {
         /*** Mounted properties ***/
-        this.subscribeToPrivateChannel();
+        await this.getUserDetails(); // profileData.id must be set before subscribing
+        await this.subscribeToPrivateChannel();
         await this.chatList();
-        await this.getUserDetails();
         await this.userList();
         window.addEventListener("click", this.handleUserDropdownClose);
         window.addEventListener("click", this.handleOtherUserDropdownClose);
@@ -366,6 +366,7 @@ export default {
     },
     async beforeUnmount() {
         /*** Before Unmounted properties ***/
+        this.unsubscribeChannel();
         window.removeEventListener("click", this.handleUserDropdownClose);
         window.removeEventListener("click", this.handleOtherUserDropdownClose);
         window.removeEventListener("click", this.handleLeftChatDropdownClose);
@@ -486,32 +487,32 @@ export default {
         },
 
         /*** subscribe to private channel ***/
-        subscribeToPrivateChannel() {
+        async subscribeToPrivateChannel() {
             if (!this.profileData?.id) return;
-            if (!window.Echo) {
-                window.Pusher = Pusher;
-                window.Echo = new Echo({
-                    broadcaster: 'pusher',
-                    key: import.meta.env.VITE_PUSHER_APP_KEY,
-                    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-                    forceTLS: true,
-                    encrypted: true,
-                    authEndpoint: '/broadcasting/auth',
-                    auth: {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        },
+            this.pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
+                cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+                forceTLS: true,
+                authEndpoint: '/broadcasting/auth',
+                auth: {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
-                });
-            }
-            if (this.echoChannel) {
-                window.Echo.leave(`private-chats.${this.profileData.id}`);
-            }
-            this.echoChannel = window.Echo.private(`chats.${this.profileData.id}`).listen('.MessageSent', (e) => {
-                if (this.selectedUser && (e.chat.sender_id === this.selectedUser.id || e.chat.receiver_id === this.selectedUser.id)) {
-                    this.chats.push(e.chat);
-                }
+                },
             });
+            this.channel = this.pusher.subscribe(`private-chats.${this.profileData.id}`);
+            this.channel.bind('MessageSent', (data) => {
+                this.chats.push(data.chat);
+            });
+            this.channel.bind('pusher:subscription_error', (status) => {
+                console.error('Pusher subscription error:', status);
+            });
+        },
+
+        unsubscribeChannel() {
+            if (this.pusher && this.channel) {
+                this.pusher.unsubscribe(`private-chats.${this.profileData.id}`);
+                this.channel = null;
+            }
         },
 
         /*** Change details api implementation ***/
