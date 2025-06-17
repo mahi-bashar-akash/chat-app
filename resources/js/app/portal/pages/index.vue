@@ -209,10 +209,10 @@
                 <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" @click="closeEditProfileModal()">
                     Cancel
                 </button>
-                <button type="submit" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" v-if="!editProfileLoading">
+                <button type="submit" class="outline-0 border-0 bg-[#03b562]/25 duration-500 hover:bg-bg-[#03b562] text-[#03b562] hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" v-if="!editProfileLoading">
                     Update
                 </button>
-                <button type="button" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl group" v-if="editProfileLoading">
+                <button type="button" class="outline-0 border-0 bg-[#03b562]/25 duration-500 hover:bg-bg-[#03b562] text-[#03b562] hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" v-if="editProfileLoading">
                     <span class="inline-block size-[20px] rounded-full border-2 border-transparent border-t-2 border-t-blue-600 group-hover:border-t-white animate-spin"></span>
                 </button>
             </div>
@@ -255,10 +255,10 @@
                 <button type="button" class="outline-0 border-0 bg-gray-200 duration-500 hover:bg-gray-700 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" @click="closeChangePasswordModal()">
                     Cancel
                 </button>
-                <button type="submit" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" v-if="!changePasswordLoading">
+                <button type="submit" class="outline-0 border-0 bg-[#03b562]/25 duration-500 hover:bg-bg-[#03b562] text-[#03b562] hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" v-if="!changePasswordLoading">
                     Update
                 </button>
-                <button type="button" class="outline-0 border-0 bg-blue-200 duration-500 hover:bg-blue-600 text-black hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl group" v-if="changePasswordLoading">
+                <button type="button" class="outline-0 border-0 bg-[#03b562]/25 duration-500 hover:bg-bg-[#03b562] text-[#03b562] hover:text-white inline-flex justify-center items-center min-w-[120px] min-h-[48px] max-h-[48px] rounded-xl" v-if="changePasswordLoading">
                     <span class="inline-block size-[20px] rounded-full border-2 border-transparent border-t-2 border-t-blue-600 group-hover:border-t-white animate-spin"></span>
                 </button>
             </div>
