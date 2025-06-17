@@ -1,7 +1,7 @@
 <template>
 
     <form @submit.prevent="verification()" class="w-full block">
-        <div class="mb-2 text-2xl"> Verification Code</div>
+        <div class="mb-5 text-2xl text-center"> Verification Code</div>
         <div class="mb-3 block w-full">
             <label for="user-verification" class="block mb-1 text-center text-[14px] hidden"> Verification Code </label>
             <input id="user-verification" type="text" name="verification_code" v-model="formData.verification_code"
