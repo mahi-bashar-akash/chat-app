@@ -69,27 +69,7 @@
 </head>
 <body>
 
-    <div id="app" class="hidden"></div>
-
-    <div id="preloader" class="fixed top-0 start-0 w-full h-full flex justify-center items-center bg-white">
-        <div class="loader"></div>
-    </div>
-
-    <script type="application/javascript">
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const preloader = document.querySelector('#preloader');
-            const app = document.querySelector('#app');
-            app.classList.add('hidden');
-            preloader.classList.add('flex');
-            window.addEventListener('load', function () {
-                preloader.classList.remove('flex');
-                preloader.classList.add('hidden');
-                app.classList.remove('hidden');
-            });
-        });
-
-    </script>
+    <div id="app"></div>
 
 </body>
 </html>
