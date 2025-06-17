@@ -8,11 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Log;
 
 class ChatController extends BaseController
 {
 
-    public function list(Request $request)
+    public function list(Request $request): \Illuminate\Http\JsonResponse
     {
         $userId = $request->user()->id;
         $chatWithId = $request->query('chat');
@@ -27,7 +28,7 @@ class ChatController extends BaseController
         return response()->json(['chats' => $chats], 200);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'receiver_id' => 'required|exists:users,id',
@@ -43,10 +44,12 @@ class ChatController extends BaseController
         ]);
         $message = Message::with(['sender','receiver'])->find($chat->id);
         event(new MessageSent($message));
+
+        Log::info('MessageSent Event Fired:', ['chat' => $message]);
         return response()->json(['chat' => $message], 201);
     }
 
-    public function delete($id)
+    public function delete($id): \Illuminate\Http\JsonResponse
     {
         try {
             $chat = Message::findOrFail($id);
@@ -60,7 +63,7 @@ class ChatController extends BaseController
         }
     }
 
-    public function clear()
+    public function clear(): \Illuminate\Http\JsonResponse
     {
         $userId = Auth::id();
         Message::where('sender_id', $userId)->orWhere('receiver_id', $userId)->delete();

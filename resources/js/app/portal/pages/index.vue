@@ -358,7 +358,7 @@ export default {
         await this.getUserDetails();
         await this.userList();
         if (!this.formData.receiver_id && this.userData.length > 0) {
-            this.selectUser(this.userData[0]);
+            await this.selectUser(this.userData[0]);
             await this.chatList();
         }
         await this.subscribeToPrivateChannel();
@@ -475,7 +475,7 @@ export default {
                 this.profileData = response.data.user;
                 this.profileParam = JSON.parse(JSON.stringify(response.data.user));
                 this.formData.sender_id = response.data.user.id;
-                this.subscribeToPrivateChannel();
+                await this.subscribeToPrivateChannel();
             } catch (error) {
                 if (error.chat === 'Unauthorized') {
                     localStorage.removeItem("pusherTransportTLS");
@@ -675,7 +675,6 @@ export default {
             this.selectedUser = user;
             this.selectedUserInitials = this.shortName(user.name);
             this.formData.receiver_id = user.id;
-            await this.chatList();
             await this.$nextTick(() => this.scrollToBottom());
         },
 

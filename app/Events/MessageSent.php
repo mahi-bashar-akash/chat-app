@@ -21,19 +21,17 @@ class MessageSent implements ShouldBroadcast, ShouldQueue
         $this->chat = $chat;
     }
 
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PrivateChannel('private-chats.' . $this->chat->receiver_id);
+        return [
+            new PrivateChannel('chats.' . $this->chat->sender_id),
+            new PrivateChannel('chats.' . $this->chat->receiver_id),
+        ];
     }
 
-    public function broadcastAs()
+    public function broadcastAs(): string
     {
         return 'MessageSent';
-    }
-
-    public function broadcastWith()
-    {
-        return ['chat' => $this->chat];
     }
 
 }
