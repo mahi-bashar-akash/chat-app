@@ -830,7 +830,6 @@ export default {
             this.selectedUserInitials = this.shortName(user.name);
             this.formData.receiver_id = user.id;
             this.chats = [];
-            this.chatList();
         },
 
         /*** Format date time ***/
