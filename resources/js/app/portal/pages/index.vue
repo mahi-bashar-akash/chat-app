@@ -135,7 +135,7 @@
                                     <div class="w-full px-4 py-2 text-[16px] font-medium">
                                         {{ message.message }}
                                     </div>
-                                    <div class="text-[12px] text-end bg-blue-500 text-white px-4 py-2 shadow-inner">
+                                    <div class="text-[12px] text-start bg-blue-500 text-white px-4 py-2 shadow-inner">
                                         {{ formatTime(message.created_at) }}
                                     </div>
                                 </div>
