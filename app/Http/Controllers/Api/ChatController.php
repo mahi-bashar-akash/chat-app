@@ -55,9 +55,11 @@ class ChatController extends BaseController
             'content' => $request->content,
         ]);
 
-        event(new MessageSend($message));
+        $updatedMessage = Message::with(['sender','receiver'])->find($message->id);
 
-        return response()->json(['message' => $message], 201);
+        MessageSend::dispatch($updatedMessage);
+
+        return response()->json(['message' => $updatedMessage], 201);
     }
 
     public function delete($id)
