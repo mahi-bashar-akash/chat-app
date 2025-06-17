@@ -355,10 +355,13 @@ export default {
     },
     async mounted() {
         /*** Mounted properties ***/
-        await this.getUserDetails(); // profileData.id must be set before subscribing
-        await this.subscribeToPrivateChannel();
-        await this.chatList();
+        await this.getUserDetails();
         await this.userList();
+        if (!this.formData.receiver_id && this.userData.length > 0) {
+            this.selectUser(this.userData[0]);
+            await this.chatList();
+        }
+        await this.subscribeToPrivateChannel();
         window.addEventListener("click", this.handleUserDropdownClose);
         window.addEventListener("click", this.handleOtherUserDropdownClose);
         window.addEventListener("click", this.handleLeftChatDropdownClose);
@@ -501,10 +504,11 @@ export default {
             });
             this.channel = this.pusher.subscribe(`private-chats.${this.profileData.id}`);
             this.channel.bind('MessageSent', (data) => {
-                this.chats.push(data.chat);
-            });
-            this.channel.bind('pusher:subscription_error', (status) => {
-                console.error('Pusher subscription error:', status);
+                const chat = data.chat;
+                if ( (chat.sender_id === this.profileData.id && chat.receiver_id === this.formData.receiver_id) || (chat.receiver_id === this.profileData.id && chat.sender_id === this.formData.receiver_id) ) {
+                    this.chats.push(chat);
+                    this.$nextTick(() => this.scrollToBottom());
+                }
             });
         },
 
@@ -667,10 +671,12 @@ export default {
         },
 
         /*** Select user initialization ***/
-        selectUser(user) {
+        async selectUser(user) {
             this.selectedUser = user;
             this.selectedUserInitials = this.shortName(user.name);
             this.formData.receiver_id = user.id;
+            await this.chatList();
+            await this.$nextTick(() => this.scrollToBottom());
         },
 
         /*** Format date time ***/
