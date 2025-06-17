@@ -21,10 +21,11 @@ class MessageSent implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return [
-            new PrivateChannel('chats.' . $this->chat->receiver_id),
-            new PrivateChannel('chats.' . $this->chat->sender_id)
-        ];
+        return new PrivateChannel('chats.' . $this->chat->receiver_id);
+//        return [
+//            new PrivateChannel('chats.' . $this->chat->receiver_id),
+//            new PrivateChannel('chats.' . $this->chat->sender_id),
+//        ];
     }
 
     public function broadcastWith()

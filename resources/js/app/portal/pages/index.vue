@@ -515,14 +515,14 @@ export default {
     },
     async mounted() {
         /*** Mounted properties ***/
+        await this.chatList();
+        this.subscribeToPrivateChannel();
+        await this.getUserDetails();
+        await this.userList();
         window.addEventListener("click", this.handleUserDropdownClose);
         window.addEventListener("click", this.handleOtherUserDropdownClose);
         window.addEventListener("click", this.handleLeftChatDropdownClose);
         window.addEventListener("click", this.handleRightChatDropdownClose);
-        this.subscribeToPrivateChannel();
-        await this.getUserDetails();
-        await this.userList();
-        await this.chatList();
     },
     async beforeUnmount() {
         /*** Before Unmounted properties ***/
@@ -829,7 +829,6 @@ export default {
             this.selectedUser = user;
             this.selectedUserInitials = this.shortName(user.name);
             this.formData.receiver_id = user.id;
-            this.chats = [];
         },
 
         /*** Format date time ***/
