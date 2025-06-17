@@ -487,7 +487,6 @@ export default {
             changePasswordLoading: false,
             deleteLoading: false,
             chatClearLoading: false,
-            profileData: null,
             id: null,
             keyword: '',
             profileParam: {
@@ -510,20 +509,22 @@ export default {
             messages: [],
             selectedUser: {},
             selectedUserInitials: '',
+            profileData: null,
+            echoChannel: null,
         }
     },
-    mounted() {
+    async mounted() {
         /*** Mounted properties ***/
         window.addEventListener("click", this.handleUserDropdownClose);
         window.addEventListener("click", this.handleOtherUserDropdownClose);
         window.addEventListener("click", this.handleLeftChatDropdownClose);
         window.addEventListener("click", this.handleRightChatDropdownClose);
-        this.getUserDetails();
-        this.initializeLaravelEcho();
-        this.userList();
-        this.chatList();
+        await this.getUserDetails();
+        this.subscribeToPrivateChannel();
+        await this.userList();
+        await this.chatList();
     },
-    beforeUnmount() {
+    async beforeUnmount() {
         /*** Before Unmounted properties ***/
         window.removeEventListener("click", this.handleUserDropdownClose);
         window.removeEventListener("click", this.handleOtherUserDropdownClose);
@@ -531,27 +532,6 @@ export default {
         window.removeEventListener("click", this.handleRightChatDropdownClose);
     },
     methods: {
-
-        // initialize laravel echo
-        initializeLaravelEcho() {
-            window.Pusher = Pusher;
-            window.Echo = new Echo({
-                broadcaster: 'pusher',
-                key: import.meta.env.VITE_PUSHER_APP_KEY,
-                cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-                encrypted: true,
-                forceTLS: true,
-                authEndpoint: '/broadcasting/auth',
-                auth: {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                }
-            });
-            window.Echo.private(`messages.${this.profileData?.id}`).listen('.MessageSend', (e) => {
-                this.messages.push(e.message);
-            });
-        },
 
         /*** Open user dropdown ***/
         openUserDropdown() {
@@ -643,6 +623,7 @@ export default {
                 this.profileData = response.data.user;
                 this.profileParam = JSON.parse(JSON.stringify(response.data.user));
                 this.formData.sender_id = response.data.user.id;
+                this.subscribeToPrivateChannel();
             } catch (error) {
                 if (error.message === 'Unauthorized') {
                     localStorage.removeItem("pusherTransportTLS");
@@ -654,6 +635,42 @@ export default {
             } finally {
                 this.loading = false;
             }
+        },
+
+        /*** subscribe to private channel ***/
+        subscribeToPrivateChannel() {
+            if (!this.profileData?.id) return;
+            if (!window.Echo) {
+                window.Pusher = Pusher;
+                window.Echo = new Echo({
+                    broadcaster: 'pusher',
+                    key: import.meta.env.VITE_PUSHER_APP_KEY,
+                    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+                    forceTLS: true,
+                    encrypted: true,
+                    authEndpoint: '/broadcasting/auth',
+                    auth: {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('token')}`
+                        }
+                    }
+                });
+            }
+            if (this.echoChannel) {
+                window.Echo.leave(`private-messages.${this.profileData.id}`);
+            }
+            this.echoChannel = window.Echo.private(`messages.${this.profileData.id}`)
+                .listen('.MessageSend', (e) => {
+                    if (
+                        this.selectedUser &&
+                        (
+                            e.message.sender_id === this.selectedUser.id ||
+                            e.message.receiver_id === this.selectedUser.id
+                        )
+                    ) {
+                        this.messages.push(e.message);
+                    }
+                });
         },
 
         /*** Change details api implementation ***/
@@ -707,15 +724,16 @@ export default {
 
         /*** Chat list api implementation ***/
         async chatList() {
+            if (!this.formData.receiver_id) return;
             this.loading = true;
             try {
                 const response = await axios.get(`${apiRoute.chat}/list`, {
                     headers: apiService.authHeaderContent(),
                     params: {chat_with: this.formData.receiver_id}
                 });
-                this.messages = response.data.messages.reverse();
+                this.messages = response.data.messages;
             } catch (error) {
-                console.log(error.response.data.errors);
+                console.log(error.response?.data?.errors);
             } finally {
                 this.loading = false;
             }
@@ -734,8 +752,7 @@ export default {
         async chatStore() {
             this.loading = true;
             try {
-                const response = await axios.post(`${apiRoute.chat}/store`, this.formData, {headers: apiService.authHeaderContent()});
-                this.messages.push(response.data.message);
+                await axios.post(`${apiRoute.chat}/store`, this.formData, {headers: apiService.authHeaderContent()});
                 this.formData.content = '';
                 await this.chatList();
             } catch (error) {
@@ -811,6 +828,8 @@ export default {
             this.selectedUser = user;
             this.selectedUserInitials = this.shortName(user.name);
             this.formData.receiver_id = user.id;
+            this.messages = [];
+            this.chatList();
         },
 
         /*** Format date time ***/

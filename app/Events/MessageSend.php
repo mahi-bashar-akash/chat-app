@@ -2,18 +2,11 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
-use App\Models\Message;
+use Illuminate\Broadcasting\PrivateChannel;
 
 class MessageSend implements ShouldBroadcast
 {
-
-    use Dispatchable, InteractsWithSockets, SerializesModels;
-
     public $message;
 
     public function __construct($message)
@@ -31,7 +24,7 @@ class MessageSend implements ShouldBroadcast
         return 'MessageSend';
     }
 
-    public function broadcastWith(): array
+    public function broadcastWith()
     {
         return [
             'id' => $this->message->id,
@@ -41,5 +34,4 @@ class MessageSend implements ShouldBroadcast
             'created_at' => $this->message->created_at->toDateTimeString(),
         ];
     }
-
 }
