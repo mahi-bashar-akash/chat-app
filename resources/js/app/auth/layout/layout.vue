@@ -3,7 +3,7 @@
         <div class="bg-cover inset-0 absolute object-cover w-full h-screen opacity-10 -z-1" :style="{ backgroundImage: 'Url(/images/authentication-background.svg)' }"></div>
         <div class="snow-container" id="snow-container"></div>
         <section class="relative w-full h-[100vh] grid overflow-y-auto justify-center p-10 items-center relative z-50">
-            <div class="w-full sm:max-w-[420px] h-auto bg-white p-10 rounded-xl shadow-lg">
+            <div class="w-full sm:min-w-[420px] sm:max-w-[420px] h-auto bg-white p-10 rounded-xl shadow-lg">
                 <router-view/>
             </div>
         </section>

@@ -1,6 +1,6 @@
 <template>
 
-  <form @submit.prevent="verification()" class="w-full">
+  <form @submit.prevent="verification()" class="w-full block">
     <div class="mb-2 block w-full">
       <label for="user-verification" class="block mb-1 text-center text-[14px]"> Verification Code </label>
       <input id="user-verification" type="text" name="verification_code" v-model="formData.verification_code" placeholder="Enter your verification code" class="text-[13px] w-full border border-gray-200 min-h-[45px] max-h-[45px] px-4 outline-0 rounded-lg duration-300 ring-0 focus-within:ring-2 focus-within:ring-[rgba(3,181,98,1)]" autocomplete="off" />
