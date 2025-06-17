@@ -11,43 +11,60 @@
 @tailwind components;
 @tailwind utilities;
 
-.loader {
-    width: fit-content;
-    font-size: 120px;
-    font-family: system-ui,sans-serif;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: #0000;
-    -webkit-text-stroke: 1px #000;
-    background: conic-gradient(#000 0 0) text;
-    animation: l8 2s linear infinite;
+.authentication-background {
+    position: relative;
+    background-image: linear-gradient(to right top, rgba(3, 181, 98, 0.2), transparent, rgba(3, 181, 98, 0.1), transparent, rgba(3, 181, 98, 0.2));
 }
 
-@media screen and (max-width: 991px) {
-    .loader {
-        font-size: 60px;
-    }
+.snow-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
 }
 
-.loader:before {
-    content: "CHAT APP";
+.snowflake {
+    position: absolute;
+    background-color: rgba(3, 181, 98, 0.8);
+    border-radius: 50%;
+    opacity: 0.8;
+    pointer-events: none;
+    will-change: transform, opacity;
 }
-@keyframes l8 {
-    0%,2%,8%,11%,15%,21%,30%,32%,35%,40%,46%,47%,53%,61%,70%,72%,77%,80%,86%   {background-size: 0    0   }
-    1%,9%,10%,16%,20%,31%,34%,41%,45%,48%,52%,55%,60%,73%,76%,81%,85%,96%,100% {background-size: 100% 100%}
+
+@keyframes fall {
+    0% { opacity: 0; transform: translateY(0); }
+    10% { opacity: 1; }
+    100% { opacity: 0.5; transform: translateY(100vh); }
+}
+
+@keyframes diagonal-fall {
+    0% { opacity: 0; transform: translate(0, 0); }
+    10% { opacity: 1; }
+    100% { opacity: 0.25; transform: translate(10vw, 100vh); }
+}
+
+@keyframes spin-fall {
+    0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+    10% { opacity: 1; }
+    100% { opacity: 0.6; transform: translate(-10vw, 100vh) rotate(720deg); }
 }
 
 .scrollbar {
     overflow-y: scroll;
+}
 
-    &::-webkit-scrollbar {
-        background-color: transparent;
-        width: 5px !important;
-        height: 5px !important;
-    }
+::-webkit-scrollbar {
+    background-color: transparent;
+    width: 5px !important;
+    height: 5px !important;
+}
 
-    &::-webkit-scrollbar-thumb {
-        background: #000000;
-        height: 5px !important;
-    }
+::-webkit-scrollbar-thumb {
+    background: #000000;
+    height: 5px !important;
 }
