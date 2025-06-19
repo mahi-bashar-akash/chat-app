@@ -353,6 +353,11 @@ export default {
             channel: null,
         }
     },
+    watch: {
+        'chats.length'(newVal, oldVal) {
+            this.$nextTick(() => this.scrollToBottom());
+        }
+    },
     async mounted() {
         /*** Mounted properties ***/
         await this.getUserDetails();
@@ -361,7 +366,6 @@ export default {
             await this.selectUser(this.userData[0]);
             await this.chatList();
         }
-        await this.subscribeToPrivateChannel();
         window.addEventListener("click", this.handleUserDropdownClose);
         window.addEventListener("click", this.handleOtherUserDropdownClose);
         window.addEventListener("click", this.handleLeftChatDropdownClose);
@@ -376,14 +380,6 @@ export default {
         window.removeEventListener("click", this.handleRightChatDropdownClose);
     },
     methods: {
-
-        /*** After store chat scroll down ***/
-        scrollToBottom() {
-            const el = this.$refs.scrollAnchor;
-            if (el) {
-                el.scrollIntoView({ behavior: 'smooth' });
-            }
-        },
 
         /*** Open user dropdown ***/
         openUserDropdown() {
@@ -696,6 +692,14 @@ export default {
         getInitials(userId) {
             if (userId === this.profileData.id) return this.shortName(this.profileData.name);
             return this.selectedUserInitials;
+        },
+
+        /*** After store chat scroll down ***/
+        scrollToBottom() {
+            const el = this.$refs.scrollAnchor;
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+            }
         },
 
     }

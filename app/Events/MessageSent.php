@@ -11,7 +11,6 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class MessageSent implements ShouldBroadcast, ShouldQueue
 {
-
     use Dispatchable, InteractsWithQueue, SerializesModels;
 
     public $chat;
@@ -24,8 +23,8 @@ class MessageSent implements ShouldBroadcast, ShouldQueue
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('chats.' . $this->chat->sender_id),
-            new PrivateChannel('chats.' . $this->chat->receiver_id),
+            new PrivateChannel('private-chats.' . $this->chat->sender_id),
+            new PrivateChannel('private-chats.' . $this->chat->receiver_id),
         ];
     }
 
@@ -34,4 +33,10 @@ class MessageSent implements ShouldBroadcast, ShouldQueue
         return 'MessageSent';
     }
 
+    public function broadcastWith(): array
+    {
+        return [
+            'chat' => $this->chat
+        ];
+    }
 }
