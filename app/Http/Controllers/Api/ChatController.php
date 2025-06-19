@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Support\Facades\Log;
 
 class ChatController extends BaseController
 {
@@ -44,8 +43,6 @@ class ChatController extends BaseController
         ]);
         $message = Message::with(['sender','receiver'])->find($chat->id);
         event(new MessageSent($message));
-
-        Log::info('MessageSent Event Fired:', ['chat' => $message]);
         return response()->json(['chat' => $message], 201);
     }
 
