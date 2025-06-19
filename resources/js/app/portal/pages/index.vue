@@ -498,13 +498,10 @@ export default {
                     },
                 },
             });
-            this.channel = this.pusher.subscribe(`private-chats.${this.profileData.id}`);
-            this.channel.bind('MessageSent', (data) => {
-                const chat = data.chat;
-                if ( (chat.sender_id === this.profileData.id && chat.receiver_id === this.formData.receiver_id) || (chat.receiver_id === this.profileData.id && chat.sender_id === this.formData.receiver_id) ) {
-                    this.chats.push(chat);
-                    this.$nextTick(() => this.scrollToBottom());
-                }
+            this.channel = this.pusher.subscribe(`chat-application`);
+            this.channel.bind('chat-event', (data) => {
+                this.chats.push(data.chat);
+                this.$nextTick(() => this.scrollToBottom());
             });
         },
 
