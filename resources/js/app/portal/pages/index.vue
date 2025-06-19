@@ -145,12 +145,17 @@
                             </template>
 
                         </div>
+                        <div v-if="isTyping" class="flex justify-start items-center gap-2">
+                            <div class="size-2 bg-gray-300 animate-pulse rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                            <div class="size-2 bg-gray-300 animate-pulse rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                            <div class="size-2 bg-gray-300 animate-pulse rounded-full animate-bounce" style="animation-delay: 0.6s"></div>
+                        </div>
                         <div ref="scrollAnchor"></div>
                     </div>
 
                     <!-- User text submit part -->
                     <form @submit.prevent="manageChat()" class="p-3 w-full flex justify-between items-center">
-                        <input type="text" name="message" v-model="formData.message" placeholder="Typing Here ..." class="w-full min-h-[50px] px-5 outline-0 bg-gray-200 border-0 block rounded-lg" autocomplete="off"/>
+                        <input type="text" name="message" v-model="formData.message" @input="sendTyping" placeholder="Typing Here ..." class="w-full min-h-[50px] px-5 outline-0 bg-gray-200 border-0 block rounded-lg" autocomplete="off"/>
                         <button type="submit" class="size-[50px] min-w-[50px] min-h-[50px] w-[50px] h-[50px] outline-0 border-0 bg-gray-200 inline-flex justify-center items-center group rounded-full ms-3">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 duration-500 rotate-0 group-hover:-rotate-45">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
@@ -351,6 +356,7 @@ export default {
             profileData: null,
             pusher: null,
             channel: null,
+            isTyping: false,
         }
     },
     watch: {
@@ -500,9 +506,20 @@ export default {
             });
             this.channel = this.pusher.subscribe(`chat-application`);
             this.channel.bind('chat-event', (data) => {
-                this.chats.push(data.chat);
-                this.$nextTick(() => this.scrollToBottom());
+                if (data.chat && data.chat.message === '__typing__') {
+                    if (data.chat.sender_id === this.formData.receiver_id) {
+                        this.isTyping = true;
+                        clearTimeout(this.typingTimeout);
+                        this.typingTimeout = setTimeout(() => {
+                            this.isTyping = false;
+                        }, 1500);
+                    }
+                } else {
+                    this.chats.push(data.chat);
+                    this.$nextTick(() => this.scrollToBottom());
+                }
             });
+
         },
 
         unsubscribeChannel() {
@@ -698,6 +715,23 @@ export default {
                 el.scrollIntoView({ behavior: 'smooth' });
             }
         },
+
+        sendTyping() {
+            if (this.isTyping) return;
+            this.isTyping = true;
+            const fakeTypingData = {
+                sender_id: this.formData.sender_id,
+                receiver_id: this.formData.receiver_id,
+                message: '__typing__',
+            };
+            axios.post(`${apiRoute.chat}/store`, fakeTypingData, {
+                headers: apiService.authHeaderContent(),
+            }).catch(() => {}).finally(() => {
+                setTimeout(() => {
+                    this.isTyping = false;
+                }, 1500);
+            });
+        }
 
     }
 }

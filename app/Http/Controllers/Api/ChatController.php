@@ -36,6 +36,14 @@ class ChatController extends BaseController
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
+        if ($request->message === '__typing__') {
+            event(new MessageSent((object)[
+                'sender_id' => Auth::id(),
+                'receiver_id' => $request->receiver_id,
+                'message' => '__typing__',
+            ]));
+            return response()->json(['chat' => 'typing event sent'], 200);
+        }
         $chat = Message::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $request->receiver_id,
