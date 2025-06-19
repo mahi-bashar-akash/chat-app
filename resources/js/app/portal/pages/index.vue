@@ -131,15 +131,15 @@
 
                             <!-- Sent Message -->
                             <template v-else>
-                                <div class="bg-blue-600 shadow-lg overflow-hidden text-white rounded-lg min-w-[250px]">
+                                <div class="bg-[rgba(3,181,98,0.9)] shadow-lg overflow-hidden text-white rounded-lg min-w-[250px]">
                                     <div class="w-full px-4 py-2 text-[16px] font-medium">
                                         {{ message.message }}
                                     </div>
-                                    <div class="text-[12px] text-start bg-blue-500 text-white px-4 py-2 shadow-inner">
+                                    <div class="text-[12px] text-start bg-[rgba(3,181,98,0.9)] text-white px-4 py-2 shadow-inner">
                                         {{ formatTime(message.created_at) }}
                                     </div>
                                 </div>
-                                <div class="min-w-[50px] min-h-[50px] inline-flex justify-center bg-blue-600 text-white font-medium items-center rounded-full ms-3 shadow-lg">
+                                <div class="min-w-[50px] min-h-[50px] inline-flex justify-center bg-[rgba(3,181,98,1)] text-white font-medium items-center rounded-full ms-3 shadow-lg">
                                     {{ getInitials(profileData.id) }}
                                 </div>
                             </template>
